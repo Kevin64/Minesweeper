@@ -1,0 +1,13 @@
+﻿  fillField.c
+D:\kevin\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\fillField.c(34,18): warning C4244: 'função': conversão de 'time_t' para 'unsigned int', possível perda de dados
+  game.c
+  initField.c
+  main.c
+  openSpaceField.c
+  printField.c
+  sumMineField.c
+  Previous IPDB not found, fall back to full compilation.
+  Gerando código
+  All 25 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finalizada a geração de código
+  Minesweeper.vcxproj -> D:\kevin\OneDrive\Documentos\GitHub\Minesweeper\Release\Minesweeper.exe
