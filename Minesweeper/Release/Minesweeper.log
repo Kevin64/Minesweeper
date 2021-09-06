@@ -1,13 +1,12 @@
 ﻿  fillField.c
-D:\kevin\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\fillField.c(34,18): warning C4244: 'função': conversão de 'time_t' para 'unsigned int', possível perda de dados
+D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\fillField.c(34,12): warning C4244: 'função': conversão de 'time_t' para 'unsigned int', possível perda de dados
   game.c
   initField.c
   main.c
+D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\main.c(124,1): warning C4026: função declarada com lista de parâmetros formais
   openSpaceField.c
   printField.c
   sumMineField.c
-  Previous IPDB not found, fall back to full compilation.
-  Gerando código
-  All 25 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
-  Finalizada a geração de código
-  Minesweeper.vcxproj -> D:\kevin\OneDrive\Documentos\GitHub\Minesweeper\Release\Minesweeper.exe
+C:\Program Files\Microsoft Visual Studio\2022\Preview\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(1076,5): error MSB6006: "link.exe" foi encerrado com o código 1120.
+printField.obj : error LNK2001: símbolo externo não resolvido _printTitle
+D:\OneDrive\Documentos\GitHub\Minesweeper\Release\Minesweeper.exe : fatal error LNK1120: 1 externo não resolvidos

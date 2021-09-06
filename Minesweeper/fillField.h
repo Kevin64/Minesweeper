@@ -14,7 +14,7 @@ void fillFieldZero(field_t *f);
 
 void fillFieldEdge(field_t *f);
 
-void fillFieldMine(field_t *f, int *a);
+void fillFieldMine(field_t *f);
 
 void fillFieldCover(field_t* f);
 

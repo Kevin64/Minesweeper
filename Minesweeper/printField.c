@@ -7,7 +7,7 @@
 // Prints upper field to the player.
 void printField(field_t *f)
 {
-	printTitle(); // Prints title with version.
+	//printTitle(); // Prints title with version.
 	for (int i = 0; i < f->x; i++)
 	{
 		printf("\n");

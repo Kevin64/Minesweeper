@@ -29,7 +29,7 @@ void fillFieldEdge(field_t *f)
 }
 
 // Fills field with mines.
-void fillFieldMine(field_t *f, int *a)
+void fillFieldMine(field_t *f)
 {
 	srand(time(NULL));
 	for (int i = 0; i < f->m; i++)
@@ -38,7 +38,7 @@ void fillFieldMine(field_t *f, int *a)
 		int y = rand() % f->y; // Randomly places mines in y.
 
 		// Places mines where there are not edges, existing mines, and where the player made the first move.
-		if (f->mat[x][y] != MINE && f->mat[x][y] != EDGE_T_B && f->mat[x][y] != EDGE_L_R && a[0] != x && a[1] != y)
+		if (f->mat[x][y] != MINE && f->mat[x][y] != EDGE_T_B && f->mat[x][y] != EDGE_L_R)
 			f->mat[x][y] = MINE;
 		else
 			i--;

@@ -1,10 +1,12 @@
 ﻿  fillField.c
-D:\kevin\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\fillField.c(34,18): warning C4244: 'função': conversão de 'time_t' para 'unsigned int', possível perda de dados
+D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\fillField.c(34,12): warning C4244: 'função': conversão de 'time_t' para 'unsigned int', possível perda de dados
   game.c
   initField.c
   main.c
+D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\main.c(76,12): warning C4013: 'countMines' indefinido; assumindo extern retornando int
+D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\main.c(172,1): warning C4026: função declarada com lista de parâmetros formais
   openSpaceField.c
   printField.c
   sumMineField.c
   Gerando Código...
-  Minesweeper.vcxproj -> D:\kevin\OneDrive\Documentos\GitHub\Minesweeper\Debug\Minesweeper.exe
+  Minesweeper.vcxproj -> D:\OneDrive\Documentos\GitHub\Minesweeper\Debug\Minesweeper-SDL-1.1.0.2109-alpha.exe

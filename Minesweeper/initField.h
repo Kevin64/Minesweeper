@@ -14,4 +14,12 @@ field_t *initField(int x, int y, int mines);
 
 field_t *initCover(int x, int y);
 
+struct tile
+{
+	int x;
+	int y;
+	int w;
+	int h;
+} tile;
+
 #endif
