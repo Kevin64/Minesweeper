@@ -8,6 +8,7 @@
 #include "printField.h"
 #include "openSpaceField.h"
 #include "game.h"
+#include "constants.h"
 
 // SDL global variables.
 SDL_Window *window = NULL;
@@ -27,11 +28,12 @@ bool clickedL = false;
 bool clickedR = false;
 bool win = false;
 bool lose = false;
-bool selected = false;
+bool canOpen = false;
+bool canFlag = false;
 int last_frame_time = 0;
 int length, option = 0;
 int i, j;
-int ij_sel[3];
+int ij_selected[3];
 int xm, ym, xi, xf, yi, yf;
 int button_x, button_y, button_w, button_h;
 float delta_time = 0.0f;
@@ -44,12 +46,12 @@ bool initialize_window(void)
 	// Initializes SDL, if can't, outputs an error message.
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
 	{
-		fprintf(stderr, "Error initializing SDL.\n");
+		fprintf(stderr, ERROR_SDL_INIT);
 		return false;
 	}
 	// Create window with those parameters.
 	window = SDL_CreateWindow(
-		"Minesweeper", // Title in titlebar.
+		TITLE, // Title in titlebar.
 		SDL_WINDOWPOS_CENTERED, // Screen X position.
 		SDL_WINDOWPOS_CENTERED, // Screen Y position.
 		WINDOW_WIDTH, // Window width.
@@ -59,7 +61,7 @@ bool initialize_window(void)
 	// If can't create window, outputs an error message.
 	if (!window)
 	{
-		fprintf(stderr, "Error creating SDL Window.\n");
+		fprintf(stderr, ERROR_SDL_WINDOW);
 		return false;
 	}
 	// Initializes SDL renderer.
@@ -67,17 +69,17 @@ bool initialize_window(void)
 	// If can't create renderer, outputs an error message.
 	if (!renderer)
 	{
-		fprintf(stderr, "Error creating SDL Renderer.\n");
+		fprintf(stderr, ERROR_SDL_RENDERER);
 		return false;
 	}
 
 	// Initializes the font through SDL_TTF.
 	if (TTF_Init() != 0)
 	{
-		fprintf(stderr, "Error initializing SDL_TTF.\n");
+		fprintf(stderr, ERROR_SDL_TTF);
 		return false;
 	}
-	font = TTF_OpenFont("C:\\tahoma.ttf" /*path*/, 48 /*size*/);
+	font = TTF_OpenFont(FONT_PATH, FONT_SIZE);
 	
 	// Sets the alpha channel for blending.
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -89,10 +91,10 @@ bool initialize_window(void)
 // Initializes menu parameters.
 void setup_menu()
 {
-	button_x = 0;
+	button_x = DELTA_X;
 	button_y = WINDOW_HEIGHT;
-	button_w = WINDOW_WIDTH;
-	button_h = 100;
+	button_w = WINDOW_WIDTH - 2*DELTA_X;
+	button_h = DELTA_Y;
 
 	new_game_button.x = button_x;
 	new_game_button.y = button_y / 4;
@@ -100,11 +102,11 @@ void setup_menu()
 	new_game_button.h = button_h;
 	
 	quit_game_button.x = button_x;
-	quit_game_button.y = button_y / 2;
+	quit_game_button.y = new_game_button.y * 3 - button_h;
 	quit_game_button.w = button_w;
 	quit_game_button.h = button_h;
 }
-// Initializes minefield parameters.
+// Initializes stage parameters.
 void setup_stage(int w, int h, int m)
 {
 	tile.x = TILE_SPACING;
@@ -122,108 +124,87 @@ void setup_stage(int w, int h, int m)
 	countMines(f); // Calculates the amount of mines and fills tips on mines's neighborhoods.
 }
 
-// Process user mouse/keyboard inputs in game.
-void process_input_menu()
+// Process user mouse/keyboard inputs in menu.
+void process_input()
 {
 	while (SDL_PollEvent(&event))
 	{
-		switch (event.type)
-		{
-		case SDL_QUIT:
-			game_is_running = false;
-			menu_is_running = false;
-			stage_is_running = false;
-			break;
-		case SDL_KEYDOWN:
-			if (event.key.keysym.sym == SDLK_ESCAPE)
+		if (menu_is_running && !stage_is_running)
+		{			
+			switch (event.type)
 			{
+			case SDL_QUIT:
 				game_is_running = false;
 				menu_is_running = false;
 				stage_is_running = false;
-			}
-			if (event.key.keysym.sym == SDLK_DOWN && option < 1)
-			{
-				option++;
-				printf("%d", option);
-			}
-			if (event.key.keysym.sym == SDLK_UP && option > 0)
-			{
-				option--;
-				printf("%d", option);
-			}
-			if (event.key.keysym.sym == SDLK_RETURN)
-			{
-				if (option == 0)
-				{
-					menu_is_running = false;
-					stage_is_running = true;
-				}
-				else if (option == 1)
+				break;
+			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_ESCAPE)
 				{
 					game_is_running = false;
 					menu_is_running = false;
 					stage_is_running = false;
-				}				
-			}
-			break;
+				}
+				if (event.key.keysym.sym == SDLK_DOWN && option < 1)
+					option++;
+				if (event.key.keysym.sym == SDLK_UP && option > 0)
+					option--;
+				if (event.key.keysym.sym == SDLK_RETURN)
+				{
+					if (option == 0)
+					{
+						menu_is_running = false;
+						stage_is_running = true;
+					}
+					else if (option == 1)
+					{
+						game_is_running = false;
+						menu_is_running = false;
+						stage_is_running = false;
+					}
+				}
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				clickedL = event.button.button == SDL_BUTTON_LEFT;
+				break;
+			case SDL_MOUSEBUTTONUP:
+				clickedL = !event.button.button == SDL_BUTTON_LEFT;
+				break;
+			}			
 		}
-
-		SDL_GetMouseState(&xm, &ym);
-
-		if (event.button.button == SDL_BUTTON_LEFT)
-			clickedL = true;
-	}
-}
-
-// Process user mouse/keyboard inputs in stage.
-void process_input_stage()
-{
-	while (SDL_PollEvent(&event))
-	{
-		switch (event.type)
-		{
-		case SDL_QUIT:
-			game_is_running = false;
-			menu_is_running = false;
-			stage_is_running = false;
-			break;
-		case SDL_KEYDOWN:
-			if (event.key.keysym.sym == SDLK_ESCAPE)
+		else if (!menu_is_running && stage_is_running)
+		{			
+			switch (event.type)
 			{
+			case SDL_QUIT:
 				game_is_running = false;
 				menu_is_running = false;
 				stage_is_running = false;
-			}
-			break;
+				break;
+			case SDL_KEYDOWN:
+				if (event.key.keysym.sym == SDLK_ESCAPE)
+				{
+					game_is_running = false;
+					menu_is_running = false;
+					stage_is_running = false;
+				}
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				clickedL = event.button.button == SDL_BUTTON_LEFT;
+				clickedR = event.button.button == SDL_BUTTON_RIGHT;
+				break;
+			case SDL_MOUSEBUTTONUP:
+				clickedL = !event.button.button == SDL_BUTTON_LEFT;
+				clickedR = !event.button.button == SDL_BUTTON_RIGHT;
+				break;
+			}			
 		}
-
-		SDL_GetMouseState(&xm, &ym);
-
-		if (event.button.button == SDL_BUTTON_LEFT)
-			clickedL = true;
-		if (event.type == SDL_MOUSEBUTTONDOWN)
-			clickedR = true;
 	}
+	SDL_GetMouseState(&xm, &ym);	
 }
 
-// Process game objects states in menu.
-void update_menu()
-{
-	// Sleep the execution until we reach the target frame time in milliseconds
-	int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - last_frame_time);
-
-	// Only call delay if we are too fast to process this frame
-	if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME)
-		SDL_Delay(time_to_wait);
-
-	// Get a delta time factor converted to seconds to be used to update my objects
-	delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0f;
-
-	last_frame_time = SDL_GetTicks();
-}
-
-// Process game objects states in stage.
-void update_stage()
+// Process game objects states in game.
+void update()
 {
 	// Sleep the execution until we reach the target frame time in milliseconds
 	int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - last_frame_time);
@@ -239,189 +220,200 @@ void update_stage()
 
 	//TODO: Here is where we can update the state of our objects
 	
-	win = checkWin(f, c);
-	lose = checkLose(f, c, ij_sel);
-	
+	if (f != NULL && c != NULL)
+	{
+		if (canOpen)
+			openField(f, c, ij_selected[0], ij_selected[1], ij_selected[2]);
+		if (canFlag)
+			openField(f, c, ij_selected[0], ij_selected[1], ij_selected[2]);
+		win = checkWin(f, c);
+		lose = checkLose(f, c, ij_selected);
+		canOpen = canFlag = false;
+	}
 }
 
-// Process object rendering in menu.
-void render_menu()
+// Process object rendering in game.
+void render()
 {
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderClear(renderer);
+	if (!stage_is_running && menu_is_running)
+	{
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_RenderClear(renderer);
 
-	if (xm >= new_game_button.x && xm <= new_game_button.x + new_game_button.w && ym >= new_game_button.y && ym <= new_game_button.y + new_game_button.h)
-	{
-		option = 0;
-		if (clickedL)
+		if (xm >= new_game_button.x && xm <= new_game_button.x + new_game_button.w && ym >= new_game_button.y && ym <= new_game_button.y + new_game_button.h)
 		{
-			menu_is_running = false;
-			stage_is_running = true;
-			clickedL = false;
+			option = 0;
+			if (clickedL)
+			{
+				menu_is_running = false;
+				stage_is_running = true;
+				clickedL = false;
+			}
 		}
-	}
-	if (xm >= quit_game_button.x && xm <= quit_game_button.x + quit_game_button.w && ym >= quit_game_button.y && ym <= quit_game_button.y + quit_game_button.h)
-	{
-		option = 1;
-		if (clickedL)
+		if (xm >= quit_game_button.x && xm <= quit_game_button.x + quit_game_button.w && ym >= quit_game_button.y && ym <= quit_game_button.y + quit_game_button.h)
 		{
-			game_is_running = false;
-			menu_is_running = false;
+			option = 1;
+			if (clickedL)
+			{
+				game_is_running = false;
+				menu_is_running = false;
+				stage_is_running = false;
+				clickedL = false;
+			}
+		}
+		if (option == 0)
+		{
+			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+			SDL_RenderFillRect(renderer, &new_game_button);
+
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			SDL_RenderFillRect(renderer, &quit_game_button);
+		}
+		else if (option == 1)
+		{
+			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+			SDL_RenderFillRect(renderer, &quit_game_button);
+
+			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+			SDL_RenderFillRect(renderer, &new_game_button);
+		}
+
+		SDL_RenderPresent(renderer);
+	}
+	else if (stage_is_running && !menu_is_running)
+	{
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_RenderClear(renderer);
+		i = 0;
+		j = 0;
+
+		//TODO: Here is where we can start drawing ou game objects
+
+		for (i = 0; i < c->x; i++)
+		{
+			for (j = 0; j < c->y; j++)
+			{
+				xi = (tile.x + tile.w) * j;
+				yi = (tile.y + tile.h) * i;
+				xf = (xi + tile.w);
+				yf = (yi + tile.h);
+
+				tile_square.x = (tile.x + tile.w) * j;
+				tile_square.y = (tile.y + tile.h) * i;
+				tile_square.w = tile.w;
+				tile_square.h = tile.h;
+
+				if (xm >= xi && xm <= xf && ym >= yi && ym <= yf && c->mat[i][j] != EDGE_L_R && c->mat[i][j] != EDGE_T_B)
+				{
+					if (clickedL)
+					{
+						canOpen = true;
+						clickedL = false;
+						clickedR = false;
+						ij_selected[0] = i;
+						ij_selected[1] = j;
+						ij_selected[2] = OPEN_F;
+					}
+					if (clickedR)
+					{
+						canFlag = true;
+						clickedL = false;
+						clickedR = false;
+						ij_selected[0] = i;
+						ij_selected[1] = j;
+						ij_selected[2] = FLAG_F;
+					}
+				}
+				if (c->mat[i][j] == MINE)
+				{
+					SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+					SDL_RenderFillRect(renderer, &tile_square);
+				}
+				else if (c->mat[i][j] == EDGE_L_R || c->mat[i][j] == EDGE_T_B)
+				{
+					SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
+					SDL_RenderFillRect(renderer, &tile_square);
+				}
+				else if (c->mat[i][j] == FLAG)
+				{
+					SDL_SetRenderDrawColor(renderer, 127, 255, 0, 255);
+					SDL_RenderFillRect(renderer, &tile_square);
+				}
+				else if (c->mat[i][j] == COVER)
+				{
+					SDL_SetRenderDrawColor(renderer, 153, 204, 255, 255);
+					SDL_RenderFillRect(renderer, &tile_square);
+				}
+				else if (c->mat[i][j] == 0)
+				{
+					SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+					SDL_RenderFillRect(renderer, &tile_square);
+				}
+				else
+				{
+					length = snprintf(NULL, 0, "%d", c->mat[i][j]);
+					aux = malloc(length + 1);
+					snprintf(aux, length + 1, "%d", c->mat[i][j]);
+
+					SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+					SDL_RenderFillRect(renderer, &tile_square);
+
+					gameTextSurface = TTF_RenderText_Blended(font, aux, color);
+					gameTextTexture = SDL_CreateTextureFromSurface(renderer, gameTextSurface);
+					SDL_RenderCopy(renderer, gameTextTexture, NULL, &tile_square);
+					SDL_FreeSurface(gameTextSurface);
+					SDL_DestroyTexture(gameTextTexture);
+				}
+			}
+		}
+		if (win)
+		{
+			SDL_Rect win_banner = {
+				(int)0,
+				(int)WINDOW_HEIGHT / 3,
+				(int)WINDOW_WIDTH,
+				(int)100
+			};
+			length = snprintf(NULL, 0, "%s", "Você venceu!");
+			aux = malloc(length + 1);
+			snprintf(aux, length + 1, "%s", "Você venceu!");
+
+			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 127);
+			SDL_RenderFillRect(renderer, &win_banner);
+
+			finaleTextSurface = TTF_RenderText_Blended(font, aux, color);
+			finaleTextTexture = SDL_CreateTextureFromSurface(renderer, finaleTextSurface);
+			SDL_RenderCopy(renderer, finaleTextTexture, NULL, &win_banner);
+			SDL_FreeSurface(finaleTextSurface);
+			SDL_DestroyTexture(finaleTextTexture);
 			stage_is_running = false;
-			clickedL = false;
+			menu_is_running = true;
 		}
-	}
-	if (option == 0)
-	{
-		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-		SDL_RenderFillRect(renderer, &new_game_button);
+		if (lose)
+		{
+			SDL_Rect lose_banner = {
+				(int)0,
+				(int)WINDOW_HEIGHT / 3,
+				(int)WINDOW_WIDTH,
+				(int)100
+			};
+			length = snprintf(NULL, 0, "%s", "Você perdeu!");
+			aux = malloc(length + 1);
+			snprintf(aux, length + 1, "%s", "Você perdeu!");
 
-		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-		SDL_RenderFillRect(renderer, &quit_game_button);
-	}
-	else if (option == 1)
-	{
-		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-		SDL_RenderFillRect(renderer, &quit_game_button);
+			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 127);
+			SDL_RenderFillRect(renderer, &lose_banner);
 
-		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-		SDL_RenderFillRect(renderer, &new_game_button);
-	}
-
-	SDL_RenderPresent(renderer);
-}
-
-// Process object rendering in stage.
-void render_stage()
-{
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-	SDL_RenderClear(renderer);
-	i = 0;
-	j = 0;
-
-	//TODO: Here is where we can start drawing ou game objects
-
-	for (i = 0; i < c->x; i++)
-	{
-		for (j = 0; j < c->y; j++)
-		{			
-			xi = (tile.x + tile.w) * j;
-			yi = (tile.y + tile.h) * i;
-			xf = (xi + tile.w);
-			yf = (yi + tile.h);
-
-			tile_square.x = (tile.x + tile.w) * j;
-			tile_square.y = (tile.y + tile.h) * i;
-			tile_square.w = tile.w;
-			tile_square.h = tile.h;
-
-			if (xm >= xi && xm <= xf && ym >= yi && ym <= yf && c->mat[i][j] != EDGE_L_R && c->mat[i][j] != EDGE_T_B)
-			{
-				if (clickedL)
-				{
-					openField(f, c, i, j, OPEN_F);
-					clickedL = false;
-					clickedR = false;
-					ij_sel[0] = i;
-					ij_sel[1] = j;
-					ij_sel[2] = OPEN_F;
-				}
-				if (clickedR)
-				{
-					openField(f, c, i, j, FLAG_F);
-					clickedL = false;
-					clickedR = false;
-				}
-			}
-			if (c->mat[i][j] == MINE)
-			{
-				SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-				SDL_RenderFillRect(renderer, &tile_square);
-			}
-			else if (c->mat[i][j] == EDGE_L_R || c->mat[i][j] == EDGE_T_B)
-			{
-				SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
-				SDL_RenderFillRect(renderer, &tile_square);
-			}
-			else if (c->mat[i][j] == FLAG)
-			{
-				SDL_SetRenderDrawColor(renderer, 127, 255, 0, 255);
-				SDL_RenderFillRect(renderer, &tile_square);
-			}
-			else if (c->mat[i][j] == COVER)
-			{
-				SDL_SetRenderDrawColor(renderer, 153, 204, 255, 255);
-				SDL_RenderFillRect(renderer, &tile_square);
-			}
-			else if (c->mat[i][j] == 0)
-			{
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-				SDL_RenderFillRect(renderer, &tile_square);
-			}
-			else
-			{
-				length = snprintf(NULL, 0, "%d", c->mat[i][j]);
-				aux = malloc(length + 1);
-				snprintf(aux, length + 1, "%d", c->mat[i][j]);
-
-				SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-				SDL_RenderFillRect(renderer, &tile_square);
-
-				gameTextSurface = TTF_RenderText_Blended(font, aux, color);
-				gameTextTexture = SDL_CreateTextureFromSurface(renderer, gameTextSurface);
-				SDL_RenderCopy(renderer, gameTextTexture, NULL, &tile_square);
-				SDL_FreeSurface(gameTextSurface);
-				SDL_DestroyTexture(gameTextTexture);
-			}			
-		}		
-	}
-	if (win)
-	{
-		SDL_Rect win_banner = {
-			(int)0,
-			(int)WINDOW_HEIGHT / 3,
-			(int)WINDOW_WIDTH,
-			(int)100
-		};
-		length = snprintf(NULL, 0, "%s", "Você venceu!");
-		aux = malloc(length + 1);
-		snprintf(aux, length + 1, "%s", "Você venceu!");
-
-		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 127);
-		SDL_RenderFillRect(renderer, &win_banner);
-
-		finaleTextSurface = TTF_RenderText_Blended(font, aux, color);
-		finaleTextTexture = SDL_CreateTextureFromSurface(renderer, finaleTextSurface);
-		SDL_RenderCopy(renderer, finaleTextTexture, NULL, &win_banner);
-		SDL_FreeSurface(finaleTextSurface);
-		SDL_DestroyTexture(finaleTextTexture);
-		stage_is_running = false;
-		menu_is_running = true;
-	}
-	if (lose)
-	{
-		SDL_Rect lose_banner = {
-			(int)0,
-			(int)WINDOW_HEIGHT / 3,
-			(int)WINDOW_WIDTH,
-			(int)100
-		};
-		length = snprintf(NULL, 0, "%s", "Você perdeu!");
-		aux = malloc(length + 1);
-		snprintf(aux, length + 1, "%s", "Você perdeu!");
-
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 127);
-		SDL_RenderFillRect(renderer, &lose_banner);
-
-		finaleTextSurface = TTF_RenderText_Blended(font, aux, color);
-		finaleTextTexture = SDL_CreateTextureFromSurface(renderer, finaleTextSurface);
-		SDL_RenderCopy(renderer, finaleTextTexture, NULL, &lose_banner);
-		SDL_FreeSurface(finaleTextSurface);
-		SDL_DestroyTexture(finaleTextTexture);
-		stage_is_running = false;
-		menu_is_running = true;
-	}
-	SDL_RenderPresent(renderer);
+			finaleTextSurface = TTF_RenderText_Blended(font, aux, color);
+			finaleTextTexture = SDL_CreateTextureFromSurface(renderer, finaleTextSurface);
+			SDL_RenderCopy(renderer, finaleTextTexture, NULL, &lose_banner);
+			SDL_FreeSurface(finaleTextSurface);
+			SDL_DestroyTexture(finaleTextTexture);
+			stage_is_running = false;
+			menu_is_running = true;
+		}
+		SDL_RenderPresent(renderer);
+	}	
 }
 
 void destroy_window()
@@ -445,16 +437,16 @@ int main()
 		setup_menu();
 		while (menu_is_running)
 		{
-			process_input_menu(); // Process user mouse/keyboard inputs in menu.
-			update_menu(); // Process game objects states in menu.
-			render_menu(); // Process object rendering in menu.
+			process_input(); // Process user mouse/keyboard inputs in menu.
+			update(); // Process game objects states in menu.
+			render(); // Process object rendering in menu.
 		}
 		setup_stage(10, 10, 10); // Initializes minefield parameters.
 		while (stage_is_running)
 		{
-			process_input_stage(); // Process user mouse/keyboard inputs in stage.
-			update_stage(); // Process game objects states in stage.
-			render_stage(); // Process object rendering in stage.
+			process_input(); // Process user mouse/keyboard inputs in stage.
+			update(); // Process game objects states in stage.
+			render(); // Process object rendering in stage.
 		}		
 	}
 	// Closes window and terminate process.

@@ -1,0 +1,20 @@
+#pragma once
+#ifndef _CONSTANTS_H_
+#define _CONSTANTS_H_
+#define WINDOW_WIDTH 1280
+#define WINDOW_HEIGHT 720
+#define DELTA_X 250
+#define DELTA_Y 100
+#define TILE_SIDE_SIZE 25
+#define TILE_SPACING 10
+#define FPS 30
+#define FRAME_TARGET_TIME (1000 / FPS)
+#define FONT_SIZE 48
+#define FONT_PATH "C:\\courbd.ttf"
+#define TITLE "Minesweeper"
+#define ERROR_SDL_INIT "Error initializing SDL.\n"
+#define ERROR_SDL_WINDOW "Error creating SDL Window.\n"
+#define ERROR_SDL_RENDERER "Error creating SDL Renderer.\n"
+#define ERROR_SDL_TTF "Error initializing SDL_TTF.\n"
+
+#endif

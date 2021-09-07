@@ -147,6 +147,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="constants.h" />
     <ClInclude Include="fillField.h" />
     <ClInclude Include="game.h" />
     <ClInclude Include="initField.h" />

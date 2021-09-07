@@ -1,12 +1,6 @@
 #pragma once
 #ifndef _GAME_H_
 #define _GAME_H_
-#define WINDOW_WIDTH 410
-#define WINDOW_HEIGHT 410
-#define TILE_SIDE_SIZE 25
-#define TILE_SPACING 10
-#define FPS 30
-#define FRAME_TARGET_TIME (1000 / FPS)
 #include <stdbool.h>
 #include "initField.h"
 
