@@ -3,6 +3,8 @@
 #define _FILLFIELD_H_
 #include "initField.h"
 
+#define OPEN_F 1
+#define FLAG_F 2
 #define MINE 20
 #define BLANK 0
 #define COVER 10

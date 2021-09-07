@@ -1,38 +1,38 @@
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <stdbool.h>
-//#include <SDL.h>
-//#include "game.h"
-//#include "initField.h"
-//#include "fillField.h"
-//#include "sumMineField.h"
-//#include "printField.h"
-//#include "openSpaceField.h"
-//
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <SDL.h>
+#include "game.h"
+#include "initField.h"
+#include "fillField.h"
+#include "sumMineField.h"
+#include "printField.h"
+#include "openSpaceField.h"
+
 // Checks if the player beat the game.
-//bool checkWin(field_t *f, field_t *c)
-//{
-//	 If each upper slot equals cover AND lower slot equals mine, OR, upper slot equals flag AND lower slot equals mine, OR, upper slot equals lower slot, CONTINUE. If not, player still not won.
-//	for (int i = 1; i < c->x - 1; i++)
-//		for (int j = 1; j < c->y - 1; j++)
-//			if ((c->mat[i][j] == COVER && f->mat[i][j] == MINE) || (c->mat[i][j] == FLAG && f->mat[i][j] == MINE) || (c->mat[i][j] == f->mat[i][j]))
-//				continue;
-//			else
-//				return false;
-//	return true;
-//}
-//
+bool checkWin(field_t *f, field_t *c)
+{
+	// If each upper slot equals cover AND lower slot equals mine, OR, upper slot equals flag AND lower slot equals mine, OR, upper slot equals lower slot, CONTINUE. If not, player still not won.
+	for (int i = 1; i < c->x - 1; i++)
+		for (int j = 1; j < c->y - 1; j++)
+			if ((c->mat[i][j] == COVER && f->mat[i][j] == MINE) || (c->mat[i][j] == FLAG && f->mat[i][j] == MINE) || (c->mat[i][j] == f->mat[i][j]))
+				continue;
+			else
+				return false;
+	return true;
+}
+
 // Checks if the player lost the game.
-//bool checkLose(field_t *f, field_t *c, int *inpt)
-//{
-//	 If lower slot equals mine AND upper slot not equals flag AND player choose 'open' as a move, player LOST.
-//	if (f->mat[inpt[0]][inpt[1]] == MINE && c->mat[inpt[0]][inpt[1]] != FLAG && inpt[2] == 1)
-//		return true;
-//	else
-//		return false;
-//}
-//
-// Prints a victory line.
+bool checkLose(field_t *f, field_t *c, int *inpt)
+{
+	// If lower slot equals mine AND upper slot not equals flag AND player choose 'open' as a move, player LOST.
+	if (f->mat[inpt[0]][inpt[1]] == MINE && c->mat[inpt[0]][inpt[1]] != FLAG && inpt[2] == OPEN_F)
+		return true;
+	else
+		return false;
+}
+
+//// Prints a victory line.
 //void printWin(field_t *f, field_t *c, bool fnsh)
 //{
 //	if (fnsh)
@@ -50,8 +50,8 @@
 //		free(c);
 //	}
 //}
-//
-// Prints a defeat line.
+
+//// Prints a defeat line.
 //void printLose(field_t *f, field_t *c)
 //{
 //	system("cls");
@@ -61,21 +61,21 @@
 //	free(f);
 //	free(c);
 //}
-//
-// Prints title with version.
+
+//// Prints title with version.
 //void printTitle()
 //{
 //	printf("\033[0;37m"); // Prints in white.
 //	printf("\n Campo Minado - v1.0 - Implementado por Kevin Costa.\n\n");
 //}
-//
+
 // Verify player's input and returns to an array, before placing the mines, so the player won't die right away.
 //int *verifyInput(field_t* f)
 //{
 //	int x, y, flag;
 //	int *vec = (int*)malloc(3 * sizeof(int)); // Allocates the array which will be used to store the return values.
 //
-//	 Asks for the line and column that the player wants to open/flag, within specified limits.
+//	// Asks for the line and column that the player wants to open/flag, within specified limits.
 //	do
 //	{
 //		//printf("\033[0;37m"); // Prints in white.
@@ -104,7 +104,7 @@
 //	return vec;
 //}
 //
-// Starts a new game
+//// Starts a new game
 //void startGame()
 //{
 //	int *inpt = (int*)malloc(3 * sizeof(int)); // Allocates the array which will be used to store args used later.
@@ -115,7 +115,7 @@
 //	printf("\033[0;37m"); // Prints in white.
 //	printTitle(); // Prints title with version.
 //
-//	 Asks for width and height of the field, within specified limits.
+//	// Asks for width and height of the field, within specified limits.
 //	do
 //	{		
 //		/*printf("\033[0;37m");

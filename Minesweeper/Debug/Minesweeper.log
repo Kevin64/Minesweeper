@@ -3,10 +3,10 @@ D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\fillField.c(34,12): warnin
   game.c
   initField.c
   main.c
-D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\main.c(76,12): warning C4013: 'countMines' indefinido; assumindo extern retornando int
-D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\main.c(172,1): warning C4026: função declarada com lista de parâmetros formais
+D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\main.c(122,12): warning C4013: 'countMines' indefinido; assumindo extern retornando int
+D:\OneDrive\Documentos\GitHub\Minesweeper\Minesweeper\main.c(437,1): warning C4026: função declarada com lista de parâmetros formais
   openSpaceField.c
   printField.c
   sumMineField.c
   Gerando Código...
-  Minesweeper.vcxproj -> D:\OneDrive\Documentos\GitHub\Minesweeper\Debug\Minesweeper-SDL-1.1.0.2109-alpha.exe
+  Minesweeper.vcxproj -> D:\OneDrive\Documentos\GitHub\Minesweeper\Debug\Minesweeper-SDL-2.0.0.2109-alpha.exe

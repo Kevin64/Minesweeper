@@ -46,7 +46,7 @@
 		 openFieldUtil(f, c, x, y, old);
 	 }
 	 // Else, if player flags upper slot and it's not flagged, flags.
-	 else if(flag == 2 && c->mat[x][y] != FLAG)
+	 else if (flag == 2 && c->mat[x][y] != FLAG && c->mat[x][y] != f->mat[x][y])
 		 c->mat[x][y] = FLAG;
 	 // Else, if player flags upper slot and it's not cover AND it's not flagged AND it's not mine, do nothing.
 	 else if (flag == 2 && c->mat[x][y] != COVER && c->mat[x][y] != FLAG && c->mat[x][y] != MINE)
@@ -54,4 +54,5 @@
 	 // Else, if player flags upper slot and it's already flagged, covers again.
 	 else if (flag == 2 && c->mat[x][y] == FLAG)
 		 c->mat[x][y] = COVER;
+	 else if (flag == 2 && c->mat[x][y] == f->mat[x][y]);
  }

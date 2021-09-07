@@ -74,7 +74,7 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>C:\SDL2\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\SDL2\lib\x86;$(LibraryPath)</LibraryPath>
-    <TargetName>$(ProjectName)-SDL-1.1.0.2109-alpha</TargetName>
+    <TargetName>$(ProjectName)-SDL-2.0.0.2109-alpha</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
