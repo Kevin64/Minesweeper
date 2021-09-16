@@ -14,7 +14,7 @@
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Event event;
-SDL_Color color;
+SDL_Color color = {192, 192, 192};
 TTF_Font *font;
 SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface;
 SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture;
@@ -91,28 +91,32 @@ bool initialize_window(void)
 // Initializes menu parameters.
 void setup_menu()
 {
+	// Sets button size.
 	button_x = DELTA_X;
 	button_y = WINDOW_HEIGHT;
 	button_w = WINDOW_WIDTH - 2*DELTA_X;
 	button_h = DELTA_Y;
 
+	// New game button position.
 	new_game_button.x = button_x;
 	new_game_button.y = button_y / 4;
 	new_game_button.w = button_w;
 	new_game_button.h = button_h;
 	
+	// Quit game button position.
 	quit_game_button.x = button_x;
 	quit_game_button.y = new_game_button.y * 3 - button_h;
 	quit_game_button.w = button_w;
 	quit_game_button.h = button_h;
 }
+
 // Initializes stage parameters.
 void setup_stage(int w, int h, int m)
 {
-	tile.x = TILE_SPACING;
-	tile.y = TILE_SPACING;
-	tile.w = TILE_SIDE_SIZE;
-	tile.h = TILE_SIDE_SIZE;
+	tile.x = TILE_SPACING; // Tile spacing between each other.
+	tile.y = TILE_SPACING; // Tile spacing between each other.
+	tile.w = TILE_SIDE_SIZE; // Tile side size.
+	tile.h = TILE_SIDE_SIZE; // Tile side size.
 
 	f = initField(w, h, m); // Allocates the lower field, where mines and tips will be written.
 	c = initCover(w, h); // Allocates the upper field, where the player will uncover.
@@ -286,6 +290,8 @@ void render()
 		SDL_RenderClear(renderer);
 		i = 0;
 		j = 0;
+		float centerFieldX = ((WINDOW_WIDTH / 2) - (c->x * (TILE_SIDE_SIZE + TILE_SPACING)) / 2);
+		float centerFieldY = ((WINDOW_HEIGHT / 2) - (c->y * (TILE_SIDE_SIZE + TILE_SPACING)) / 2);
 
 		//TODO: Here is where we can start drawing ou game objects
 
@@ -293,13 +299,13 @@ void render()
 		{
 			for (j = 0; j < c->y; j++)
 			{
-				xi = (tile.x + tile.w) * j;
-				yi = (tile.y + tile.h) * i;
+				xi = (tile.x + tile.w) * i + centerFieldX;
+				yi = (tile.y + tile.h) * j + centerFieldY;
 				xf = (xi + tile.w);
 				yf = (yi + tile.h);
 
-				tile_square.x = (tile.x + tile.w) * j;
-				tile_square.y = (tile.y + tile.h) * i;
+				tile_square.x = xi;
+				tile_square.y = yi;
 				tile_square.w = tile.w;
 				tile_square.h = tile.h;
 
@@ -308,8 +314,6 @@ void render()
 					if (clickedL)
 					{
 						canOpen = true;
-						clickedL = false;
-						clickedR = false;
 						ij_selected[0] = i;
 						ij_selected[1] = j;
 						ij_selected[2] = OPEN_F;
@@ -317,12 +321,12 @@ void render()
 					if (clickedR)
 					{
 						canFlag = true;
-						clickedL = false;
-						clickedR = false;
 						ij_selected[0] = i;
 						ij_selected[1] = j;
 						ij_selected[2] = FLAG_F;
 					}
+					clickedL = false;
+					clickedR = false;
 				}
 				if (c->mat[i][j] == MINE)
 				{
@@ -341,12 +345,12 @@ void render()
 				}
 				else if (c->mat[i][j] == COVER)
 				{
-					SDL_SetRenderDrawColor(renderer, 153, 204, 255, 255);
+					SDL_SetRenderDrawColor(renderer, 64, 64, 128, 255);
 					SDL_RenderFillRect(renderer, &tile_square);
 				}
 				else if (c->mat[i][j] == 0)
 				{
-					SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+					SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
 					SDL_RenderFillRect(renderer, &tile_square);
 				}
 				else
@@ -355,7 +359,7 @@ void render()
 					aux = malloc(length + 1);
 					snprintf(aux, length + 1, "%d", c->mat[i][j]);
 
-					SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+					SDL_SetRenderDrawColor(renderer, 75, 75, 75, 255);
 					SDL_RenderFillRect(renderer, &tile_square);
 
 					gameTextSurface = TTF_RenderText_Blended(font, aux, color);
@@ -416,6 +420,7 @@ void render()
 	}	
 }
 
+// Closes window and terminate process.
 void destroy_window()
 {
 	TTF_CloseFont(font);
@@ -425,7 +430,8 @@ void destroy_window()
 	SDL_Quit();
 }
 
-int main()
+// Main function.
+int main(int argc, char* argv[])
 {
 	// If everything is initialized, game_is_running equals true.
 	game_is_running = initialize_window();
@@ -449,7 +455,7 @@ int main()
 			render(); // Process object rendering in stage.
 		}		
 	}
-	// Closes window and terminate process.
-	destroy_window();
+	
+	destroy_window(); // Closes window and terminate process.
 	return 0;
 }
