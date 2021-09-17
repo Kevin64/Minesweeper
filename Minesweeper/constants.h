@@ -8,8 +8,6 @@
 #define BUTTON_W 250
 #define BUTTON_H 100
 #define BUTTON_SPACING 200
-#define DELTA_X 250
-#define DELTA_Y 100
 #define TILE_SIDE_SIZE 35
 #define TILE_SPACING 5
 #define FPS 30

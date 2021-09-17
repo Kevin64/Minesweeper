@@ -2,19 +2,19 @@
 #ifndef _GAME_H_
 #define _GAME_H_
 #include <stdbool.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include "initField.h"
 
-bool checkWin(field_t* f, field_t* c);
+bool checkWin(field_t *f, field_t *c);
 
-bool checkLose(field_t* f, field_t* c, int* inpt);
+bool checkLose(field_t *f, field_t *c, int *inpt);
 
-void printWin(field_t* f, field_t* c, bool fnsh);
+void printFinish(field_t *f, field_t *c, SDL_Renderer *renderer, SDL_Surface *finaleTextSurface, SDL_Texture *finaleTextTexture, TTF_Font *font, SDL_Color color, bool win);
 
-void printLose(field_t* f, field_t* c);
+void printTitle(SDL_Renderer *renderer, SDL_Surface *titleTextSurface, SDL_Texture *titleTextTexture, TTF_Font *font, SDL_Color color);
 
-//void printTitle();
-
-int *verifyInput(field_t* f);
+int *verifyInput(field_t *f);
 
 void startGame();
 

@@ -15,10 +15,11 @@
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Event event;
-SDL_Color color = {192, 192, 192};
+SDL_Color colorTip = {192, 192, 192};
+SDL_Color colorTitle = { 255, 255, 255 };
 TTF_Font *font;
-SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface;
-SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture;
+SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface;
+SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture, *titleTextTexture;
 SDL_Rect new_game_button, quit_game_button, tile_square;
 
 // Game global variables.
@@ -254,6 +255,7 @@ void render()
 	{
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
+		printTitle(renderer, titleTextSurface, titleTextTexture, font, colorTitle);
 
 		if (xm >= new_game_button.x && xm <= new_game_button.x + new_game_button.w && ym >= new_game_button.y && ym <= new_game_button.y + new_game_button.h)
 		{
@@ -300,6 +302,8 @@ void render()
 	{
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
+		printTitle(renderer, titleTextSurface, titleTextTexture, font, colorTitle);
+
 		i = 0;
 		j = 0;
 		float centerFieldX = ((WINDOW_WIDTH / 2) - (c->x * (TILE_SIDE_SIZE + TILE_SPACING)) / 2);
@@ -374,7 +378,7 @@ void render()
 					SDL_SetRenderDrawColor(renderer, 75, 75, 75, 255);
 					SDL_RenderFillRect(renderer, &tile_square);
 
-					gameTextSurface = TTF_RenderText_Blended(font, aux, color);
+					gameTextSurface = TTF_RenderText_Blended(font, aux, colorTip);
 					gameTextTexture = SDL_CreateTextureFromSurface(renderer, gameTextSurface);
 					SDL_RenderCopy(renderer, gameTextTexture, NULL, &tile_square);
 					SDL_FreeSurface(gameTextSurface);
@@ -385,46 +389,21 @@ void render()
 
 		if (win)
 		{
-			SDL_Rect win_banner = {
-				(int)0,
-				(int)WINDOW_HEIGHT / 3,
-				(int)WINDOW_WIDTH,
-				(int)100
-			};
-			length = snprintf(NULL, 0, "%s", "Você venceu!");
-			aux = malloc(length + 1);
-			snprintf(aux, length + 1, "%s", "Você venceu!");
-
-			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 127);
-			SDL_RenderFillRect(renderer, &win_banner);
-
-			finaleTextSurface = TTF_RenderText_Blended(font, aux, color);
-			finaleTextTexture = SDL_CreateTextureFromSurface(renderer, finaleTextSurface);
-			SDL_RenderCopy(renderer, finaleTextTexture, NULL, &win_banner);
-			SDL_FreeSurface(finaleTextSurface);
-			SDL_DestroyTexture(finaleTextTexture);	
+			printFinish(f, c, renderer, finaleTextSurface, finaleTextTexture, font, colorTip, true);
+			free(f);
+			f = NULL;
+			free(c);
+			c = NULL;
 		}
+			
 		if (lose)
 		{
-			SDL_Rect lose_banner = {
-				(int)0,
-				(int)WINDOW_HEIGHT / 3,
-				(int)WINDOW_WIDTH,
-				(int)100
-			};
-			length = snprintf(NULL, 0, "%s", "Você perdeu!");
-			aux = malloc(length + 1);
-			snprintf(aux, length + 1, "%s", "Você perdeu!");
-
-			SDL_SetRenderDrawColor(renderer, 255, 0, 0, 127);
-			SDL_RenderFillRect(renderer, &lose_banner);
-
-			finaleTextSurface = TTF_RenderText_Blended(font, aux, color);
-			finaleTextTexture = SDL_CreateTextureFromSurface(renderer, finaleTextSurface);
-			SDL_RenderCopy(renderer, finaleTextTexture, NULL, &lose_banner);
-			SDL_FreeSurface(finaleTextSurface);
-			SDL_DestroyTexture(finaleTextTexture);
-		}
+			printFinish(f, c, renderer, finaleTextSurface, finaleTextTexture, font, colorTip, false);
+			free(f);
+			f = NULL;
+			free(c);
+			c = NULL;
+		}			
 
 		SDL_RenderPresent(renderer);
 	}	

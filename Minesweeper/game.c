@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <SDL.h>
+#include <SDL_ttf.h>
 #include "game.h"
 #include "initField.h"
 #include "fillField.h"
 #include "sumMineField.h"
 #include "printField.h"
 #include "openSpaceField.h"
+#include "constants.h"
 
 // Checks if the player beat the game.
 bool checkWin(field_t *f, field_t *c)
@@ -32,42 +34,66 @@ bool checkLose(field_t *f, field_t *c, int *inpt)
 		return false;
 }
 
-//// Prints a victory line.
-//void printWin(field_t *f, field_t *c, bool fnsh)
-//{
-//	if (fnsh)
-//	{
-//		 Prints flags on every mine when player wins.
-//		for(int i = 1; i < c->x - 1; i++)
-//			for(int j = 1; j < c->y - 1; j++)
-//				if(f->mat[i][j] == MINE)
-//					c->mat[i][j] = FLAG;
-//		system("cls");
-//		printField(c); // Prints upper field to the player.
-//		printf("\033[0;34m"); // Prints in blue.
-//		printf("\n Voce venceu!");
-//		free(f);
-//		free(c);
-//	}
-//}
+// Prints a victory/defeat line.
+void printFinish(field_t *f, field_t *c, SDL_Renderer *renderer, SDL_Surface *finaleTextSurface, SDL_Texture* finaleTextTexture, TTF_Font *font, SDL_Color color, bool win)
+{
+	char *aux;
+	int length;
 
-//// Prints a defeat line.
-//void printLose(field_t *f, field_t *c)
-//{
-//	system("cls");
-//	printField(c); // Prints upper field to the player.
-//	printf("\033[0;31m"); // Prints in red.
-//	printf("\n Voce perdeu!");
-//	free(f);
-//	free(c);
-//}
+	SDL_Rect finish_banner = {
+		(int)0,
+		(int)WINDOW_HEIGHT / 3,
+		(int)WINDOW_WIDTH,
+		(int)250
+	};
 
-//// Prints title with version.
-//void printTitle()
-//{
-//	printf("\033[0;37m"); // Prints in white.
-//	printf("\n Campo Minado - v1.0 - Implementado por Kevin Costa.\n\n");
-//}
+	if (win)
+	{
+		length = snprintf(NULL, 0, "%s", "Você venceu!");
+		aux = malloc(length + 1);
+		snprintf(aux, length + 1, "%s", "Você venceu!");
+		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 127);
+	}
+	else
+	{
+		length = snprintf(NULL, 0, "%s", "Você perdeu!");
+		aux = malloc(length + 1);
+		snprintf(aux, length + 1, "%s", "Você perdeu!");
+		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 127);
+	}	
+
+	SDL_RenderFillRect(renderer, &finish_banner);
+
+	finaleTextSurface = TTF_RenderText_Blended(font, aux, color);
+	finaleTextTexture = SDL_CreateTextureFromSurface(renderer, finaleTextSurface);
+	SDL_RenderCopy(renderer, finaleTextTexture, NULL, &finish_banner);
+	SDL_FreeSurface(finaleTextSurface);
+	SDL_DestroyTexture(finaleTextTexture);
+	
+}
+
+// Prints title with version.
+void printTitle(SDL_Renderer *renderer, SDL_Surface *titleTextSurface, SDL_Texture *titleTextTexture, TTF_Font *font, SDL_Color color)
+{
+	SDL_Rect title_banner = {
+		(int)0,
+		(int)0,
+		(int)WINDOW_WIDTH,
+		(int)50
+	};
+	int length = snprintf(NULL, 0, "%s", "Campo Minado - v2.0.0.2109-alpha - Implementado por Kevin Costa.");
+	char *aux = malloc(length + 1);
+	snprintf(aux, length + 1, "%s", "Campo Minado - v2.0.0.2109-alpha - Implementado por Kevin Costa.");
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 127);
+
+	SDL_RenderFillRect(renderer, &title_banner);
+
+	titleTextSurface = TTF_RenderText_Blended(font, aux, color);
+	titleTextTexture = SDL_CreateTextureFromSurface(renderer, titleTextSurface);
+	SDL_RenderCopy(renderer, titleTextTexture, NULL, &title_banner);
+	SDL_FreeSurface(titleTextSurface);
+	SDL_DestroyTexture(titleTextTexture);
+}
 
 // Verify player's input and returns to an array, before placing the mines, so the player won't die right away.
 //int *verifyInput(field_t* f)
