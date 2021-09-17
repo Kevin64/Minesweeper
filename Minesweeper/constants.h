@@ -3,10 +3,15 @@
 #define _CONSTANTS_H_
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
+#define BUTTON_X 0
+#define BUTTON_Y 0
+#define BUTTON_W 250
+#define BUTTON_H 100
+#define BUTTON_SPACING 200
 #define DELTA_X 250
 #define DELTA_Y 100
-#define TILE_SIDE_SIZE 25
-#define TILE_SPACING 10
+#define TILE_SIDE_SIZE 35
+#define TILE_SPACING 5
 #define FPS 30
 #define FRAME_TARGET_TIME (1000 / FPS)
 #define FONT_SIZE 48

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <Windows.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include "initField.h"
@@ -92,20 +93,20 @@ bool initialize_window(void)
 void setup_menu()
 {
 	// Sets button size.
-	button_x = DELTA_X;
-	button_y = WINDOW_HEIGHT;
-	button_w = WINDOW_WIDTH - 2*DELTA_X;
-	button_h = DELTA_Y;
+	button_x = BUTTON_X;
+	button_y = BUTTON_Y;
+	button_w = BUTTON_W;
+	button_h = BUTTON_H;
 
 	// New game button position.
-	new_game_button.x = button_x;
-	new_game_button.y = button_y / 4;
+	new_game_button.x = button_x + ((WINDOW_WIDTH / 2) - button_w / 2);
+	new_game_button.y = button_y + ((WINDOW_HEIGHT / 2) - button_h / 2);
 	new_game_button.w = button_w;
 	new_game_button.h = button_h;
 	
 	// Quit game button position.
-	quit_game_button.x = button_x;
-	quit_game_button.y = new_game_button.y * 3 - button_h;
+	quit_game_button.x = new_game_button.x;
+	quit_game_button.y = new_game_button.y + BUTTON_SPACING;
 	quit_game_button.w = button_w;
 	quit_game_button.h = button_h;
 }
@@ -126,6 +127,17 @@ void setup_stage(int w, int h, int m)
 	fillFieldEdge(f); // Fills the upper field with edge characters.
 	fillFieldMine(f); // Fills the lower field with mines
 	countMines(f); // Calculates the amount of mines and fills tips on mines's neighborhoods.
+	stage_is_running = true;
+}
+
+void setup_new_game()
+{
+	if (win || lose)
+	{
+		Sleep(3000);
+		menu_is_running = true;
+		stage_is_running = false;
+	}	
 }
 
 // Process user mouse/keyboard inputs in menu.
@@ -158,7 +170,6 @@ void process_input()
 					if (option == 0)
 					{
 						menu_is_running = false;
-						stage_is_running = true;
 					}
 					else if (option == 1)
 					{
@@ -254,7 +265,7 @@ void render()
 				clickedL = false;
 			}
 		}
-		if (xm >= quit_game_button.x && xm <= quit_game_button.x + quit_game_button.w && ym >= quit_game_button.y && ym <= quit_game_button.y + quit_game_button.h)
+		else if (xm >= quit_game_button.x && xm <= quit_game_button.x + quit_game_button.w && ym >= quit_game_button.y && ym <= quit_game_button.y + quit_game_button.h)
 		{
 			option = 1;
 			if (clickedL)
@@ -265,6 +276,7 @@ void render()
 				clickedL = false;
 			}
 		}
+
 		if (option == 0)
 		{
 			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
@@ -370,6 +382,7 @@ void render()
 				}
 			}
 		}
+
 		if (win)
 		{
 			SDL_Rect win_banner = {
@@ -389,9 +402,7 @@ void render()
 			finaleTextTexture = SDL_CreateTextureFromSurface(renderer, finaleTextSurface);
 			SDL_RenderCopy(renderer, finaleTextTexture, NULL, &win_banner);
 			SDL_FreeSurface(finaleTextSurface);
-			SDL_DestroyTexture(finaleTextTexture);
-			stage_is_running = false;
-			menu_is_running = true;
+			SDL_DestroyTexture(finaleTextTexture);	
 		}
 		if (lose)
 		{
@@ -413,9 +424,8 @@ void render()
 			SDL_RenderCopy(renderer, finaleTextTexture, NULL, &lose_banner);
 			SDL_FreeSurface(finaleTextSurface);
 			SDL_DestroyTexture(finaleTextTexture);
-			stage_is_running = false;
-			menu_is_running = true;
 		}
+
 		SDL_RenderPresent(renderer);
 	}	
 }
@@ -447,12 +457,16 @@ int main(int argc, char* argv[])
 			update(); // Process game objects states in menu.
 			render(); // Process object rendering in menu.
 		}
-		setup_stage(10, 10, 10); // Initializes minefield parameters.
+
+		if(game_is_running)
+			setup_stage(10, 10, 10); // Initializes minefield parameters.
+
 		while (stage_is_running)
 		{
 			process_input(); // Process user mouse/keyboard inputs in stage.
 			update(); // Process game objects states in stage.
 			render(); // Process object rendering in stage.
+			setup_new_game();
 		}		
 	}
 	
