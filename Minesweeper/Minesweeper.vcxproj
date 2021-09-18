@@ -152,7 +152,7 @@
     <ClInclude Include="game.h" />
     <ClInclude Include="initField.h" />
     <ClInclude Include="openSpaceField.h" />
-    <ClInclude Include="printField.h" />
+    <ClInclude Include="printEngine.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="sumMineField.h" />
   </ItemGroup>
@@ -162,7 +162,7 @@
     <ClCompile Include="initField.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="openSpaceField.c" />
-    <ClCompile Include="printField.c" />
+    <ClCompile Include="printEngine.c" />
     <ClCompile Include="sumMineField.c" />
   </ItemGroup>
   <ItemGroup>

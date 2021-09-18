@@ -1,13 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <SDL.h>
-#include <SDL_ttf.h>
 #include "game.h"
 #include "initField.h"
 #include "fillField.h"
 #include "sumMineField.h"
-#include "printField.h"
+#include "printEngine.h"
 #include "openSpaceField.h"
 #include "constants.h"
 
@@ -34,65 +32,9 @@ bool checkLose(field_t *f, field_t *c, int *inpt)
 		return false;
 }
 
-// Prints a victory/defeat line.
-void printFinish(field_t *f, field_t *c, SDL_Renderer *renderer, SDL_Surface *finaleTextSurface, SDL_Texture* finaleTextTexture, TTF_Font *font, SDL_Color color, bool win)
+void inputParameters()
 {
-	char *aux;
-	int length;
 
-	SDL_Rect finish_banner = {
-		(int)0,
-		(int)WINDOW_HEIGHT / 3,
-		(int)WINDOW_WIDTH,
-		(int)250
-	};
-
-	if (win)
-	{
-		length = snprintf(NULL, 0, "%s", "Você venceu!");
-		aux = malloc(length + 1);
-		snprintf(aux, length + 1, "%s", "Você venceu!");
-		SDL_SetRenderDrawColor(renderer, 0, 255, 0, 127);
-	}
-	else
-	{
-		length = snprintf(NULL, 0, "%s", "Você perdeu!");
-		aux = malloc(length + 1);
-		snprintf(aux, length + 1, "%s", "Você perdeu!");
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 127);
-	}	
-
-	SDL_RenderFillRect(renderer, &finish_banner);
-
-	finaleTextSurface = TTF_RenderText_Blended(font, aux, color);
-	finaleTextTexture = SDL_CreateTextureFromSurface(renderer, finaleTextSurface);
-	SDL_RenderCopy(renderer, finaleTextTexture, NULL, &finish_banner);
-	SDL_FreeSurface(finaleTextSurface);
-	SDL_DestroyTexture(finaleTextTexture);
-	
-}
-
-// Prints title with version.
-void printTitle(SDL_Renderer *renderer, SDL_Surface *titleTextSurface, SDL_Texture *titleTextTexture, TTF_Font *font, SDL_Color color)
-{
-	SDL_Rect title_banner = {
-		(int)0,
-		(int)0,
-		(int)WINDOW_WIDTH,
-		(int)50
-	};
-	int length = snprintf(NULL, 0, "%s", "Campo Minado - v2.0.0.2109-alpha - Implementado por Kevin Costa.");
-	char *aux = malloc(length + 1);
-	snprintf(aux, length + 1, "%s", "Campo Minado - v2.0.0.2109-alpha - Implementado por Kevin Costa.");
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 127);
-
-	SDL_RenderFillRect(renderer, &title_banner);
-
-	titleTextSurface = TTF_RenderText_Blended(font, aux, color);
-	titleTextTexture = SDL_CreateTextureFromSurface(renderer, titleTextSurface);
-	SDL_RenderCopy(renderer, titleTextTexture, NULL, &title_banner);
-	SDL_FreeSurface(titleTextSurface);
-	SDL_DestroyTexture(titleTextTexture);
 }
 
 // Verify player's input and returns to an array, before placing the mines, so the player won't die right away.

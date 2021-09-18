@@ -18,3 +18,5 @@ Debug/zlib1.dll
 *.db
 .vs/Minesweeper/v17/.suo
 *.res
+*.7z
+Debug/nasalization-rg.otf

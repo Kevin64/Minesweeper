@@ -27,7 +27,7 @@
     <ClInclude Include="openSpaceField.h">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
-    <ClInclude Include="printField.h">
+    <ClInclude Include="printEngine.h">
       <Filter>Arquivos de Cabeçalho</Filter>
     </ClInclude>
     <ClInclude Include="sumMineField.h">
@@ -56,7 +56,7 @@
     <ClCompile Include="openSpaceField.c">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
-    <ClCompile Include="printField.c">
+    <ClCompile Include="printEngine.c">
       <Filter>Arquivos de Origem</Filter>
     </ClCompile>
     <ClCompile Include="sumMineField.c">
