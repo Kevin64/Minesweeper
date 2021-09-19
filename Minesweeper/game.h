@@ -14,6 +14,8 @@ void printFinish(field_t *f, field_t *c, SDL_Renderer *renderer, SDL_Surface *fi
 
 void printTitle(SDL_Renderer *renderer, SDL_Surface *titleTextSurface, SDL_Texture *titleTextTexture, TTF_Font *font, SDL_Color color);
 
+char *substring(char *destination, const char *source, int beg, int n);
+
 //int *verifyInput(field_t *f);
 
 //void startGame();

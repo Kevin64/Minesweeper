@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <Windows.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
@@ -17,11 +18,13 @@ SDL_Renderer *renderer = NULL;
 SDL_Event event;
 SDL_Color colorTip = COLOR_TIP;
 SDL_Color colorTitle = COLOR_TITLE;
+SDL_Color colorForm = COLOR_FORM;
+SDL_Color colorButton = COLOR_BUTTON;
 SDL_Color colorSelectInput = COLOR_SEL_INPT;
 TTF_Font *font;
-SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface, *widthTextSurface;
-SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture, *titleTextTexture, *widthTextTexture;
-SDL_Rect new_game_button, quit_game_button, tile_square, width_field_input_form, width_field_text_form, height_field_input_form, height_field_text_form, mine_amount_input_form, mine_amount_text_form, ok_button_form;
+SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface, *widthTextSurface, *widthInputSurface, *heightInputSurface, *mineInputSurface;
+SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture, *titleTextTexture, *widthTextTexture, *widthInputTexture, *heightInputTexture, *mineInputTexture;
+SDL_Rect new_game_button, quit_game_button, tile_square, width_field_textbox, width_field_label, height_field_textbox, height_field_label, mine_amount_textbox, mine_amount_label, ok_button_rect;
 
 // Game global variables.
 bool game_is_running = false;
@@ -35,15 +38,16 @@ bool lose = false;
 bool canOpen = false;
 bool canFlag = false;
 int last_frame_time = 0;
-int length, option = 0;
+int length, option = 0, formField = 0;
 int i, j;
 int ij_selected[3];
 int xm, ym, xi, xf, yi, yf;
 int button_x, button_y, button_w, button_h;
+int w, h, m;
 float delta_time = 0.0f;
 float centerFieldX, centerFieldY, centerFormTextX, centerFormInputX;
 char *aux;
-char *paramInput;
+char paramInput1[3], paramInput2[3], paramInput3[3];
 field_t *f, *c;
 
 // Initializes window.
@@ -114,8 +118,6 @@ void setup_main_menu()
 	quit_game_button.y = new_game_button.y + BUTTON_SPACING;
 	quit_game_button.w = button_w;
 	quit_game_button.h = button_h;
-
-	paramInput = malloc(2);
 }
 
 // Initializes game parameters.
@@ -151,8 +153,7 @@ void setup_new_game()
 // Process user mouse/keyboard inputs in menu.
 void process_input()
 {
-	SDL_StartTextInput();
-	SDL_SetTextInputRect(&width_field_input_form);
+	SDL_StartTextInput();	
 	while (SDL_PollEvent(&event))
 	{
 		// If main menu is running...
@@ -190,8 +191,8 @@ void process_input()
 					// ... the new game button.
 					if (option == 0)
 					{
-						//main_menu_is_running = false;
-						paramInput = event.text.text;
+						main_menu_is_running = false;
+						//paramInput1 = event.text.text;
 					}
 					// ... the quit game button.
 					else if (option == 1)
@@ -234,6 +235,40 @@ void process_input()
 					select_menu_is_running = false;
 					stage_is_running = false;
 				}
+				if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput1) > 0 && formField == 0)
+					substring(paramInput1, paramInput1, 0, strlen(paramInput1) - 1);
+				else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput2) > 0 && formField == 1)
+					substring(paramInput2, paramInput2, 0, strlen(paramInput2) - 1);
+				else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput3) > 0 && formField == 2)
+					substring(paramInput3, paramInput3, 0, strlen(paramInput3) - 1);
+				break;
+			case SDL_TEXTINPUT:
+				if (paramInput1[1] == '\0' && formField == 0)
+				{
+					SDL_SetTextInputRect(&width_field_label);
+					strcat(paramInput1, event.text.text);
+					printf("%s", paramInput1);
+				}
+				else if (paramInput2[1] == '\0' && formField == 1)
+				{
+					SDL_SetTextInputRect(&width_field_label);
+					strcat(paramInput2, event.text.text);
+					printf("%s", paramInput2);
+				}
+				else if (paramInput3[1] == '\0' && formField == 2)
+				{
+					SDL_SetTextInputRect(&width_field_label);
+					strcat(paramInput3, event.text.text);
+					printf("%s", paramInput3);
+				}
+				break;
+				// If the left or right mouse button is pressed, activates their variables.
+			case SDL_MOUSEBUTTONDOWN:
+				clickedL = event.button.button == SDL_BUTTON_LEFT;
+				break;
+				// If the left or right mouse button is released, deactivates their variables.
+			case SDL_MOUSEBUTTONUP:
+				clickedL = !event.button.button == SDL_BUTTON_LEFT;
 				break;
 			}
 		}
@@ -369,63 +404,117 @@ void render()
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 		printTitle(renderer, titleTextSurface, titleTextTexture, font, colorTitle);
+
+		width_field_label.y = WIDTH_TEXT_Y;
+		width_field_label.w = WIDTH_TEXT_W;
+		centerFormTextX = ((WINDOW_WIDTH / 2) - (width_field_label.w) / 2); // Centralizes the text/form/button at the center of the window width.
+		width_field_label.h = WIDTH_TEXT_H;
+		width_field_label.x = centerFormTextX;
 		
-		width_field_text_form.y = 0;
-		width_field_text_form.w = WINDOW_WIDTH / 3;
-		centerFormTextX = ((WINDOW_WIDTH / 2) - (width_field_text_form.w) / 2); // Centralizes the text/form/button at the center of the window width.
-		width_field_text_form.h = 80;
-		width_field_text_form.x = centerFormTextX;
+		width_field_textbox.y = WIDTH_INPUT_Y;
+		width_field_textbox.w = WIDTH_INPUT_W;
+		centerFormInputX = ((WINDOW_WIDTH / 2) - (width_field_textbox.w) / 2); // Centralizes the text/form/button at the center of the window width.
+		width_field_textbox.h = WIDTH_INPUT_H;
+		width_field_textbox.x = centerFormInputX;
+		printFormText(renderer, widthInputSurface, widthInputTexture, font, colorForm, width_field_textbox, paramInput1, 0, 0, 0, 255);
+
+		height_field_label.y = HEIGHT_TEXT_Y;
+		height_field_label.w = HEIGHT_TEXT_W;
+		centerFormTextX = ((WINDOW_WIDTH / 2) - (height_field_label.w) / 2); // Centralizes the text/form/button at the center of the window width.
+		height_field_label.h = HEIGHT_TEXT_H;
+		height_field_label.x = centerFormTextX;
 		
-		width_field_input_form.y = 100;
-		width_field_input_form.w = WINDOW_WIDTH / 6;
-		centerFormInputX = ((WINDOW_WIDTH / 2) - (width_field_input_form.w) / 2); // Centralizes the text/form/button at the center of the window width.
-		width_field_input_form.h = 80;
-		width_field_input_form.x = centerFormInputX;
+		height_field_textbox.y = HEIGHT_INPUT_Y;
+		height_field_textbox.w = HEIGHT_INPUT_W;
+		centerFormInputX = ((WINDOW_WIDTH / 2) - (height_field_textbox.w) / 2); // Centralizes the text/form/button at the center of the window width.
+		height_field_textbox.h = HEIGHT_INPUT_H;
+		height_field_textbox.x = centerFormInputX;
+		printFormText(renderer, heightInputSurface, heightInputTexture, font, colorForm, height_field_textbox, paramInput2, 0, 0, 0, 255);
 
-		height_field_text_form.y = 200;
-		height_field_text_form.w = WINDOW_WIDTH / 3;
-		centerFormTextX = ((WINDOW_WIDTH / 2) - (height_field_text_form.w) / 2); // Centralizes the text/form/button at the center of the window width.
-		height_field_text_form.h = 80;
-		height_field_text_form.x = centerFormTextX;
+		mine_amount_label.y = MINE_TEXT_Y;
+		mine_amount_label.w = MINE_TEXT_W;
+		centerFormTextX = ((WINDOW_WIDTH / 2) - (mine_amount_label.w) / 2); // Centralizes the text/form/button at the center of the window width.
+		mine_amount_label.h = MINE_TEXT_H;
+		mine_amount_label.x = centerFormTextX;
+
+		mine_amount_textbox.y = MINE_INPUT_Y;
+		mine_amount_textbox.w = MINE_INPUT_W;
+		centerFormInputX = ((WINDOW_WIDTH / 2) - (mine_amount_textbox.w) / 2); // Centralizes the text/form/button at the center of the window width.
+		mine_amount_textbox.h = MINE_INPUT_H;
+		mine_amount_textbox.x = centerFormInputX;
+		printFormText(renderer, mineInputSurface, mineInputTexture, font, colorForm, mine_amount_textbox, paramInput3, 0, 0, 0, 255);
+
+		ok_button_rect.y = OK_BUTTON_Y;
+		ok_button_rect.w = OK_BUTTON_W;
+		centerFormTextX = ((WINDOW_WIDTH / 2) - (ok_button_rect.w) / 2); // Centralizes the text/form/button at the center of the window width.
+		ok_button_rect.h = OK_BUTTON_H;
+		ok_button_rect.x = centerFormTextX;
+
+		// Draws each text label.
+		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorForm, width_field_label, WIDTH_TEXT, 0, 0, 0, 255);
+		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorForm, height_field_label, HEIGHT_TEXT, 0, 0, 0, 255);
+		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorForm, mine_amount_label, MINE_AMOUNT_TEXT, 0, 0, 0, 255);
+		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorButton, ok_button_rect, OK_BUTTON_TEXT, 0, 180, 30, 255);
+
+		// Draws each textbox for input.
+		SDL_SetRenderDrawColor(renderer, 127, 127, 127, 127);
+		SDL_RenderFillRect(renderer, &width_field_textbox);
+		SDL_RenderFillRect(renderer, &height_field_textbox);
+		SDL_RenderFillRect(renderer, &mine_amount_textbox);
+
+
+		// If the mouse is over the width textbox, and a click is detected, selects that box for input.
+		if (xm >= width_field_textbox.x && xm <= width_field_textbox.x + width_field_textbox.w && ym >= width_field_textbox.y && ym <= width_field_textbox.y + width_field_textbox.h)
+		{
+			if (clickedL)
+				formField = 0;
+		}
+		// If the mouse is over the height textbox, and a click is detected, selects that box for input.
+		else if (xm >= height_field_textbox.x && xm <= height_field_textbox.x + height_field_textbox.w && ym >= height_field_textbox.y && ym <= height_field_textbox.y + height_field_textbox.h)
+		{
+			if (clickedL)
+				formField = 1;
+		}
+		// If the mouse is over the mine textbox, and a click is detected, selects that box for input.
+		else if (xm >= mine_amount_textbox.x && xm <= mine_amount_textbox.x + mine_amount_textbox.w && ym >= mine_amount_textbox.y && ym <= mine_amount_textbox.y + mine_amount_textbox.h)
+		{
+			if (clickedL)
+				formField = 2;
+		}
+		// If the mouse is over the ok button, and a click is detected, starts a new stage.
+		else if (xm >= ok_button_rect.x && xm <= ok_button_rect.x + ok_button_rect.w && ym >= ok_button_rect.y && ym <= ok_button_rect.y + ok_button_rect.h)
+		{
+			if (clickedL)
+				formField = 3;
+		}
 		
-		height_field_input_form.y = 300;
-		height_field_input_form.w = WINDOW_WIDTH / 6;
-		centerFormInputX = ((WINDOW_WIDTH / 2) - (height_field_input_form.w) / 2); // Centralizes the text/form/button at the center of the window width.
-		height_field_input_form.h = 80;
-		height_field_input_form.x = centerFormInputX;
-
-		mine_amount_text_form.y = 400;
-		mine_amount_text_form.w = WINDOW_WIDTH / 3;
-		centerFormTextX = ((WINDOW_WIDTH / 2) - (mine_amount_text_form.w) / 2); // Centralizes the text/form/button at the center of the window width.
-		mine_amount_text_form.h = 80;
-		mine_amount_text_form.x = centerFormTextX;
-
-		mine_amount_input_form.y = 500;
-		mine_amount_input_form.w = WINDOW_WIDTH / 6;
-		centerFormInputX = ((WINDOW_WIDTH / 2) - (mine_amount_input_form.w) / 2); // Centralizes the text/form/button at the center of the window width.
-		mine_amount_input_form.h = 80;
-		mine_amount_input_form.x = centerFormInputX;
-
-		ok_button_form.y = 600;
-		ok_button_form.w = WINDOW_WIDTH / 6;
-		centerFormTextX = ((WINDOW_WIDTH / 2) - (ok_button_form.w) / 2); // Centralizes the text/form/button at the center of the window width.
-		ok_button_form.h = 100;
-		ok_button_form.x = centerFormTextX;
-
-		//SDL_SetRenderDrawColor(renderer, 0, 50, 0, 255);
-		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorTitle, width_field_text_form, WIDTH_TEXT);
-		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorTitle, height_field_text_form, HEIGHT_TEXT);
-		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorTitle, mine_amount_text_form, MINE_AMOUNT_TEXT);
-		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorTitle, ok_button_form, OK_BUTTON);
-		/*SDL_RenderFillRect(renderer, &width_field_text_form);
-		SDL_RenderFillRect(renderer, &height_field_text_form);
-		SDL_RenderFillRect(renderer, &mine_amount_text_form);*/
-
-		SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
-		SDL_RenderFillRect(renderer, &width_field_input_form);		
-		SDL_RenderFillRect(renderer, &height_field_input_form);		
-		SDL_RenderFillRect(renderer, &mine_amount_input_form);
-		SDL_RenderFillRect(renderer, &ok_button_form);
+		// Highlights the width textbox.
+		if (formField == 0)
+		{
+			SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
+			SDL_RenderFillRect(renderer, &width_field_textbox);
+		}
+		// Highlights the height textbox.
+		if (formField == 1)
+		{
+			SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
+			SDL_RenderFillRect(renderer, &height_field_textbox);
+		}
+		// Highlights the mine textbox.
+		if (formField == 2)
+		{
+			SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
+			SDL_RenderFillRect(renderer, &mine_amount_textbox);
+		}
+		// Grab width, height and mine amount and starts a new stage.
+		if (formField == 3)
+		{
+			// Converts each string to an integer.
+			w = strtol(paramInput1, NULL, 10);
+			h = strtol(paramInput2, NULL, 10);
+			m = strtol(paramInput3, NULL, 10);
+			select_menu_is_running = false;
+		}
 
 		SDL_RenderPresent(renderer);
 	}
@@ -577,8 +666,8 @@ int main(int argc, char* argv[])
 			render(); // Process object rendering in menu.
 		}
 
-		//if(game_is_running)
-		//	setup_stage(10, 10, 10); // Initializes minefield parameters.
+		if(game_is_running)
+			setup_stage(w, h, m); // Initializes minefield parameters.
 
 		while (stage_is_running)
 		{
