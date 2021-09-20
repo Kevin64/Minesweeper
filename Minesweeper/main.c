@@ -5,6 +5,7 @@
 #include <Windows.h>
 #include <SDL.h>
 #include <SDL_ttf.h>
+#include <SDL_image.h>
 #include "initField.h"
 #include "fillField.h"
 #include "printEngine.h"
@@ -23,8 +24,9 @@ SDL_Color colorForm = COLOR_FORM;
 SDL_Color colorButton = COLOR_BUTTON;
 SDL_Color colorSelectInput = COLOR_SEL_INPT;
 SDL_Color colorAlert = COLOR_ALERT;
+SDL_Color colorMenuText = COLOR_MENU_TEXT;
 TTF_Font *font;
-SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface, *widthTextSurface, *widthInputSurface, *heightInputSurface, *mineInputSurface, *alertTextSurface;
+SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface, *widthTextSurface, *widthInputSurface, *heightInputSurface, *mineInputSurface, *alertTextSurface, *icon;
 SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture, *titleTextTexture, *widthTextTexture, *widthInputTexture, *heightInputTexture, *mineInputTexture, *alertTextTexture;
 SDL_Rect new_game_button, quit_game_button, tile_square, width_field_textbox, width_field_label, height_field_textbox, height_field_label, mine_amount_textbox, mine_amount_label, ok_button_rect;
 
@@ -42,7 +44,7 @@ bool canFlag = false;
 int last_frame_time = 0;
 int length, option = 0, formField = 0;
 int alpha1 = ALPHA_UNSELECTED, alpha2 = ALPHA_UNSELECTED, alpha3 = ALPHA_UNSELECTED;
-int i, j;
+int i, j, counter1 = 1, counter2 = 1, counter3 = 1;
 int ij_selected[3];
 int xm, ym, xi, xf, yi, yf;
 int button_x, button_y, button_w, button_h;
@@ -96,7 +98,8 @@ bool initialize_window(void)
 	
 	// Sets the alpha channel for blending.
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-	
+	icon = IMG_Load("icon.bmp");
+	SDL_SetWindowIcon(window, icon);
 	// Returns true if all is ok.
 	return true;
 }
@@ -163,7 +166,7 @@ void process_input()
 		{			
 			win = false;
 			lose = false;
-			formField = 0;
+			counter1 = counter2 = counter3 = formField = 0;
 			memset(paramInput1, 0, sizeof paramInput1);
 			memset(paramInput2, 0, sizeof paramInput2);
 			memset(paramInput3, 0, sizeof paramInput3);
@@ -246,31 +249,45 @@ void process_input()
 					stage_is_running = false;
 				}
 				if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput1) > 0 && formField == 0)
+				{
 					substring(paramInput1, paramInput1, 0, strlen(paramInput1) - 1);
+					counter1 -= TEXT_BOX_FINE_ADJUSTEMENT;
+				}
 				else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput2) > 0 && formField == 1)
+				{
 					substring(paramInput2, paramInput2, 0, strlen(paramInput2) - 1);
+					counter2 -= TEXT_BOX_FINE_ADJUSTEMENT;
+				}
 				else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput3) > 0 && formField == 2)
+				{
 					substring(paramInput3, paramInput3, 0, strlen(paramInput3) - 1);
+					counter3 -= TEXT_BOX_FINE_ADJUSTEMENT;
+				}
 				break;
 			case SDL_TEXTINPUT:
-				if (paramInput1[1] == '\0' && formField == 0)
+				if (event.text.text[0] != '0' && event.text.text[0] != '1' && event.text.text[0] != '2' && event.text.text[0] != '3' && event.text.text[0] != '4' && event.text.text[0] != '5' && event.text.text[0] != '6' && event.text.text[0] != '7' && event.text.text[0] != '8' && event.text.text[0] != '9');
+				else
 				{
-					SDL_SetTextInputRect(&width_field_label);
-					strcat(paramInput1, event.text.text);
-					printf("%s", paramInput1);
+					if (paramInput1[1] == '\0' && formField == 0)
+					{
+						SDL_SetTextInputRect(&width_field_label);
+						strcat(paramInput1, event.text.text);
+						counter1 += TEXT_BOX_FINE_ADJUSTEMENT;
+					}
+					else if (paramInput2[1] == '\0' && formField == 1)
+					{
+						SDL_SetTextInputRect(&width_field_label);
+						strcat(paramInput2, event.text.text);
+						counter2 += TEXT_BOX_FINE_ADJUSTEMENT;
+					}
+					else if (paramInput3[1] == '\0' && formField == 2)
+					{
+						SDL_SetTextInputRect(&width_field_label);
+						strcat(paramInput3, event.text.text);
+						counter3 += TEXT_BOX_FINE_ADJUSTEMENT;
+					}
 				}
-				else if (paramInput2[1] == '\0' && formField == 1)
-				{
-					SDL_SetTextInputRect(&width_field_label);
-					strcat(paramInput2, event.text.text);
-					printf("%s", paramInput2);
-				}
-				else if (paramInput3[1] == '\0' && formField == 2)
-				{
-					SDL_SetTextInputRect(&width_field_label);
-					strcat(paramInput3, event.text.text);
-					printf("%s", paramInput3);
-				}
+				
 				break;
 				// If the left or right mouse button is pressed, activates their variables.
 			case SDL_MOUSEBUTTONDOWN:
@@ -356,7 +373,7 @@ void update()
 void render()
 {
 	// If main menu is running.
-	if (!stage_is_running && main_menu_is_running)
+	if (main_menu_is_running && !select_menu_is_running && !stage_is_running)
 	{
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
@@ -390,26 +407,20 @@ void render()
 		// Highlisghts new game button.
 		if (option == 0)
 		{
-			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-			SDL_RenderFillRect(renderer, &new_game_button);
-
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			SDL_RenderFillRect(renderer, &quit_game_button);
+			printFormText(renderer, menuTextSurface1, menuTextTexture1, font, colorMenuText, new_game_button, NEW_GAME_TEXT, 0, 255, 0, 255);
+			printFormText(renderer, menuTextSurface2, menuTextTexture2, font, colorMenuText, quit_game_button, QUIT_GAME_TEXT, 96, 0, 0, 96);
 		}
 		// Highlisghts quit game button.
 		else if (option == 1)
 		{
-			SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-			SDL_RenderFillRect(renderer, &quit_game_button);
-
-			SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-			SDL_RenderFillRect(renderer, &new_game_button);
+			printFormText(renderer, menuTextSurface2, menuTextTexture2, font, colorMenuText, new_game_button, NEW_GAME_TEXT, 96, 0, 0, 96);
+			printFormText(renderer, menuTextSurface2, menuTextTexture2, font, colorMenuText, quit_game_button, QUIT_GAME_TEXT, 0, 255, 0, 255);
 		}
 
 		SDL_RenderPresent(renderer);
 	}
 	// If select menu is running.
-	else if (!stage_is_running && !main_menu_is_running && select_menu_is_running)
+	else if (!main_menu_is_running && select_menu_is_running && !stage_is_running)
 	{
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
@@ -422,7 +433,7 @@ void render()
 		width_field_label.x = centerFormTextX;
 		
 		width_field_textbox.y = WIDTH_INPUT_Y;
-		width_field_textbox.w = WIDTH_INPUT_W;
+		width_field_textbox.w = WIDTH_INPUT_W + counter1;
 		centerFormInputX = ((WINDOW_WIDTH / 2) - (width_field_textbox.w) / 2); // Centralizes the text/form/button at the center of the window width.
 		width_field_textbox.h = WIDTH_INPUT_H;
 		width_field_textbox.x = centerFormInputX;
@@ -435,7 +446,7 @@ void render()
 		height_field_label.x = centerFormTextX;
 		
 		height_field_textbox.y = HEIGHT_INPUT_Y;
-		height_field_textbox.w = HEIGHT_INPUT_W;
+		height_field_textbox.w = HEIGHT_INPUT_W + counter2;
 		centerFormInputX = ((WINDOW_WIDTH / 2) - (height_field_textbox.w) / 2); // Centralizes the text/form/button at the center of the window width.
 		height_field_textbox.h = HEIGHT_INPUT_H;
 		height_field_textbox.x = centerFormInputX;
@@ -448,7 +459,7 @@ void render()
 		mine_amount_label.x = centerFormTextX;
 
 		mine_amount_textbox.y = MINE_INPUT_Y;
-		mine_amount_textbox.w = MINE_INPUT_W;
+		mine_amount_textbox.w = MINE_INPUT_W + counter3;
 		centerFormInputX = ((WINDOW_WIDTH / 2) - (mine_amount_textbox.w) / 2); // Centralizes the text/form/button at the center of the window width.
 		mine_amount_textbox.h = MINE_INPUT_H;
 		mine_amount_textbox.x = centerFormInputX;
@@ -543,7 +554,7 @@ void render()
 		SDL_RenderPresent(renderer);
 	}
 	// If game is running.
-	else if (stage_is_running && !main_menu_is_running)
+	else if (!main_menu_is_running && !select_menu_is_running && stage_is_running)
 	{
 		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
