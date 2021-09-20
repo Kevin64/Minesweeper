@@ -8,6 +8,7 @@
 #include "initField.h"
 #include "fillField.h"
 #include "printEngine.h"
+#include "sumMineField.h"
 #include "openSpaceField.h"
 #include "game.h"
 #include "constants.h"
@@ -21,9 +22,10 @@ SDL_Color colorTitle = COLOR_TITLE;
 SDL_Color colorForm = COLOR_FORM;
 SDL_Color colorButton = COLOR_BUTTON;
 SDL_Color colorSelectInput = COLOR_SEL_INPT;
+SDL_Color colorAlert = COLOR_ALERT;
 TTF_Font *font;
-SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface, *widthTextSurface, *widthInputSurface, *heightInputSurface, *mineInputSurface;
-SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture, *titleTextTexture, *widthTextTexture, *widthInputTexture, *heightInputTexture, *mineInputTexture;
+SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface, *widthTextSurface, *widthInputSurface, *heightInputSurface, *mineInputSurface, *alertTextSurface;
+SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture, *titleTextTexture, *widthTextTexture, *widthInputTexture, *heightInputTexture, *mineInputTexture, *alertTextTexture;
 SDL_Rect new_game_button, quit_game_button, tile_square, width_field_textbox, width_field_label, height_field_textbox, height_field_label, mine_amount_textbox, mine_amount_label, ok_button_rect;
 
 // Game global variables.
@@ -39,13 +41,14 @@ bool canOpen = false;
 bool canFlag = false;
 int last_frame_time = 0;
 int length, option = 0, formField = 0;
+int alpha1 = ALPHA_UNSELECTED, alpha2 = ALPHA_UNSELECTED, alpha3 = ALPHA_UNSELECTED;
 int i, j;
 int ij_selected[3];
 int xm, ym, xi, xf, yi, yf;
 int button_x, button_y, button_w, button_h;
 int w, h, m;
+int centerFieldX, centerFieldY, centerFormTextX, centerFormInputX;
 float delta_time = 0.0f;
-float centerFieldX, centerFieldY, centerFormTextX, centerFormInputX;
 char *aux;
 char paramInput1[3], paramInput2[3], paramInput3[3];
 field_t *f, *c;
@@ -136,11 +139,10 @@ void setup_stage(int w, int h, int m)
 	fillFieldEdge(f); // Fills the upper field with edge characters.
 	fillFieldMine(f); // Fills the lower field with mines
 	countMines(f); // Calculates the amount of mines and fills tips on mines's neighborhoods.
-	stage_is_running = true;
 }
 
 // When a game is finished, waits 3 seconds before going back to the main menu.
-void setup_new_game()
+void wait_interval()
 {
 	if (win || lose)
 	{
@@ -159,6 +161,13 @@ void process_input()
 		// If main menu is running...
 		if (main_menu_is_running && !select_menu_is_running && !stage_is_running)
 		{			
+			win = false;
+			lose = false;
+			formField = 0;
+			memset(paramInput1, 0, sizeof paramInput1);
+			memset(paramInput2, 0, sizeof paramInput2);
+			memset(paramInput3, 0, sizeof paramInput3);
+
 			// ... wait for an input event.
 			switch (event.type)
 			{
@@ -192,7 +201,8 @@ void process_input()
 					if (option == 0)
 					{
 						main_menu_is_running = false;
-						//paramInput1 = event.text.text;
+						select_menu_is_running = true;
+						stage_is_running = false;
 					}
 					// ... the quit game button.
 					else if (option == 1)
@@ -272,7 +282,7 @@ void process_input()
 				break;
 			}
 		}
-		// If game is running...
+		// If stage is running...
 		else if (!main_menu_is_running && !select_menu_is_running && stage_is_running)
 		{			
 			// ... wait for an input event.
@@ -457,9 +467,11 @@ void render()
 		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorButton, ok_button_rect, OK_BUTTON_TEXT, 0, 180, 30, 255);
 
 		// Draws each textbox for input.
-		SDL_SetRenderDrawColor(renderer, 127, 127, 127, 127);
+		SDL_SetRenderDrawColor(renderer, 127, 127, 127, alpha1);
 		SDL_RenderFillRect(renderer, &width_field_textbox);
+		SDL_SetRenderDrawColor(renderer, 127, 127, 127, alpha2);
 		SDL_RenderFillRect(renderer, &height_field_textbox);
+		SDL_SetRenderDrawColor(renderer, 127, 127, 127, alpha3);
 		SDL_RenderFillRect(renderer, &mine_amount_textbox);
 
 
@@ -491,20 +503,24 @@ void render()
 		// Highlights the width textbox.
 		if (formField == 0)
 		{
-			SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
-			SDL_RenderFillRect(renderer, &width_field_textbox);
+			alpha1 = ALPHA_SELECTED;
+			alpha2 = ALPHA_UNSELECTED;
+			alpha3 = ALPHA_UNSELECTED;
+			// SDL_RenderFillRect(renderer, &width_field_textbox);
 		}
 		// Highlights the height textbox.
 		if (formField == 1)
 		{
-			SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
-			SDL_RenderFillRect(renderer, &height_field_textbox);
+			alpha1 = ALPHA_UNSELECTED;
+			alpha2 = ALPHA_SELECTED;			//SDL_RenderFillRect(renderer, &height_field_textbox);
+			alpha3 = ALPHA_UNSELECTED;
 		}
 		// Highlights the mine textbox.
 		if (formField == 2)
 		{
-			SDL_SetRenderDrawColor(renderer, 127, 127, 127, 255);
-			SDL_RenderFillRect(renderer, &mine_amount_textbox);
+			alpha1 = ALPHA_UNSELECTED;
+			alpha2 = ALPHA_UNSELECTED;			//SDL_RenderFillRect(renderer, &mine_amount_textbox);
+			alpha3 = ALPHA_SELECTED;
 		}
 		// Grab width, height and mine amount and starts a new stage.
 		if (formField == 3)
@@ -513,7 +529,15 @@ void render()
 			w = strtol(paramInput1, NULL, 10);
 			h = strtol(paramInput2, NULL, 10);
 			m = strtol(paramInput3, NULL, 10);
-			select_menu_is_running = false;
+			if (w > WIDTH_MIN && w < WIDTH_MAX && h > HEIGHT_MIN && h < HEIGHT_MAX && m > MINE_MIN && m < (w * h))
+			{
+				select_menu_is_running = false;
+				stage_is_running = true;
+			}
+			else
+			{
+				printAlert(renderer, alertTextSurface, alertTextTexture, font, colorAlert);
+			}
 		}
 
 		SDL_RenderPresent(renderer);
@@ -538,8 +562,8 @@ void render()
 		{
 			for (j = 0; j < c->y; j++)
 			{
-				xi = (tile.x + tile.w) * i + centerFieldX;
-				yi = (tile.y + tile.h) * j + centerFieldY;
+				xi = (tile.x + tile.w) * i + centerFieldX + X_FINE_ADJUSTEMENT;
+				yi = (tile.y + tile.h) * j + centerFieldY + Y_FINE_ADJUSTEMENT;
 				xf = (xi + tile.w);
 				yf = (yi + tile.h);
 
@@ -617,6 +641,7 @@ void render()
 			f = NULL;
 			free(c);
 			c = NULL;
+			stage_is_running = false;
 		}
 		// If player wins, show a defeat banner and deallocates lower and upper fields.
 		if (lose)
@@ -626,6 +651,7 @@ void render()
 			f = NULL;
 			free(c);
 			c = NULL;
+			stage_is_running = false;
 		}			
 
 		SDL_RenderPresent(renderer);
@@ -665,8 +691,7 @@ int main(int argc, char* argv[])
 			update(); // Process game objects states in menu.
 			render(); // Process object rendering in menu.
 		}
-
-		if(game_is_running)
+		if(stage_is_running)
 			setup_stage(w, h, m); // Initializes minefield parameters.
 
 		while (stage_is_running)
@@ -674,7 +699,7 @@ int main(int argc, char* argv[])
 			process_input(); // Process user mouse/keyboard inputs in stage.
 			update(); // Process game objects states in stage.
 			render(); // Process object rendering in stage.
-			setup_new_game();
+			wait_interval();
 		}		
 	}
 	

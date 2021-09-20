@@ -53,11 +53,6 @@ char *substring(char *destination, const char *source, int beg, int n)
 	return destination;
 }
 
-void inputParameters()
-{
-
-}
-
 // Verify player's input and returns to an array, before placing the mines, so the player won't die right away.
 //int *verifyInput(field_t* f)
 //{

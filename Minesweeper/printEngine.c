@@ -7,6 +7,33 @@
 #include "game.h"
 #include "constants.h"
 
+// Prints an alert line.
+void printAlert(SDL_Renderer * renderer, SDL_Surface * alertTextSurface, SDL_Texture * alertTextTexture, TTF_Font * font, SDL_Color color)
+{
+	char *aux;
+	int length;
+
+	SDL_Rect alert_banner = {
+		(int)ALERT_BANNER_X,
+		(int)ALERT_BANNER_Y,
+		(int)ALERT_BANNER_W,
+		(int)ALERT_BANNER_H
+	};
+	
+	length = snprintf(NULL, 0, "%s", ALERT);
+	aux = malloc(length + 1);
+	snprintf(aux, length + 1, "%s", ALERT);
+	SDL_SetRenderDrawColor(renderer, 255, 0, 0, 127);
+
+	SDL_RenderFillRect(renderer, &alert_banner);
+
+	alertTextSurface = TTF_RenderText_Blended(font, aux, color);
+	alertTextTexture = SDL_CreateTextureFromSurface(renderer, alertTextSurface);
+	SDL_RenderCopy(renderer, alertTextTexture, NULL, &alert_banner);
+	SDL_FreeSurface(alertTextSurface);
+	SDL_DestroyTexture(alertTextTexture);
+}
+
 // Prints a victory/defeat line.
 void printFinish(field_t *f, field_t *c, SDL_Renderer *renderer, SDL_Surface *finaleTextSurface, SDL_Texture *finaleTextTexture, TTF_Font *font, SDL_Color color, bool win)
 {
@@ -42,7 +69,6 @@ void printFinish(field_t *f, field_t *c, SDL_Renderer *renderer, SDL_Surface *fi
 	SDL_RenderCopy(renderer, finaleTextTexture, NULL, &finish_banner);
 	SDL_FreeSurface(finaleTextSurface);
 	SDL_DestroyTexture(finaleTextTexture);
-
 }
 
 // Prints title with version.

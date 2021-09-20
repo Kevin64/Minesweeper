@@ -6,6 +6,8 @@
 #include <SDL_ttf.h>
 #include "initField.h"
 
+void printAlert(SDL_Renderer *renderer, SDL_Surface *alertTextSurface, SDL_Texture *alertTextTexture, TTF_Font *font, SDL_Color color);
+
 void printFinish(field_t* f, field_t* c, SDL_Renderer *renderer, SDL_Surface *finaleTextSurface, SDL_Texture *finaleTextTexture, TTF_Font *font, SDL_Color color, bool win);
 
 void printTitle(SDL_Renderer *renderer, SDL_Surface *titleTextSurface, SDL_Texture *titleTextTexture, TTF_Font *font, SDL_Color color);
