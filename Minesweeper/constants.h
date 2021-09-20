@@ -64,9 +64,9 @@
 #define COLOR_MENU_TEXT {0, 0, 0, 255}
 
 #define FINISH_BANNER_X 0
-#define FINISH_BANNER_Y WINDOW_HEIGHT / 3
+#define FINISH_BANNER_Y WINDOW_HEIGHT - WINDOW_HEIGHT / 4
 #define FINISH_BANNER_W WINDOW_WIDTH
-#define FINISH_BANNER_H 250
+#define FINISH_BANNER_H 180
 
 #define ALERT_BANNER_X 0
 #define ALERT_BANNER_Y WINDOW_HEIGHT / 3
@@ -90,6 +90,13 @@
 #define FONT_PATH "nasalization-rg.otf"
 #define ALPHA_UNSELECTED 96
 #define ALPHA_SELECTED 127
+
+#define WINDOW_ICON "window_icon.bmp"
+#define MINE_BOOM_ICON "mine_boom_icon.bmp"
+#define MINE_DEATH_ICON "mine_death_icon.bmp"
+#define FLAG_ICON "flag_icon.bmp"
+#define EDGE_ICON "edge_icon.bmp"
+#define COVER_ICON "cover_icon.bmp"
 
 #define ERROR_SDL_INIT "Error initializing SDL.\n"
 #define ERROR_SDL_WINDOW "Error creating SDL Window.\n"

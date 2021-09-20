@@ -68,9 +68,4 @@
       <Filter>Arquivos de Recurso</Filter>
     </ResourceCompile>
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="icon.png">
-      <Filter>Arquivos de Recurso</Filter>
-    </Image>
-  </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@
 #define OPEN_F 1
 #define FLAG_F 2
 #define MINE 20
+#define MINE_TRIG 21
 #define BLANK 0
 #define COVER 10
 #define FLAG 50

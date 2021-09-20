@@ -26,8 +26,8 @@ SDL_Color colorSelectInput = COLOR_SEL_INPT;
 SDL_Color colorAlert = COLOR_ALERT;
 SDL_Color colorMenuText = COLOR_MENU_TEXT;
 TTF_Font *font;
-SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface, *widthTextSurface, *widthInputSurface, *heightInputSurface, *mineInputSurface, *alertTextSurface, *icon;
-SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture, *titleTextTexture, *widthTextTexture, *widthInputTexture, *heightInputTexture, *mineInputTexture, *alertTextTexture;
+SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface, *widthTextSurface, *widthInputSurface, *heightInputSurface, *mineInputSurface, *alertTextSurface, *windowIconSurface, *mineIconSurface, *mineBoomIconSurface, *mineDeathIconSurface, *flagIconSurface, *edgeIconSurface, *coverIconSurface;
+SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture, *titleTextTexture, *widthTextTexture, *widthInputTexture, *heightInputTexture, *mineInputTexture, *alertTextTexture, *windowIconTexture, *mineIconTexture, *mineBoomIconTexture, *mineDeathIconTexture, *flagIconTexture, *edgeIconTexture, *coverIconTexture;
 SDL_Rect new_game_button, quit_game_button, tile_square, width_field_textbox, width_field_label, height_field_textbox, height_field_label, mine_amount_textbox, mine_amount_label, ok_button_rect;
 
 // Game global variables.
@@ -41,6 +41,8 @@ bool win = false;
 bool lose = false;
 bool canOpen = false;
 bool canFlag = false;
+bool showMines = false;
+bool resetIJ = true;
 int last_frame_time = 0;
 int length, option = 0, formField = 0;
 int alpha1 = ALPHA_UNSELECTED, alpha2 = ALPHA_UNSELECTED, alpha3 = ALPHA_UNSELECTED;
@@ -52,7 +54,7 @@ int w, h, m;
 int centerFieldX, centerFieldY, centerFormTextX, centerFormInputX;
 float delta_time = 0.0f;
 char *aux;
-char paramInput1[3], paramInput2[3], paramInput3[3];
+char paramInput1[3], paramInput2[3], paramInput3[4];
 field_t *f, *c;
 
 // Initializes window.
@@ -98,8 +100,18 @@ bool initialize_window(void)
 	
 	// Sets the alpha channel for blending.
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-	icon = IMG_Load("icon.bmp");
-	SDL_SetWindowIcon(window, icon);
+
+	// Sets the window icon.
+	windowIconSurface = IMG_Load(WINDOW_ICON);
+	SDL_SetWindowIcon(window, windowIconSurface);
+
+	// Sets icons for assets.
+	mineBoomIconSurface = IMG_Load(MINE_BOOM_ICON);
+	mineDeathIconSurface = IMG_Load(MINE_DEATH_ICON);
+	edgeIconSurface = IMG_Load(EDGE_ICON);
+	flagIconSurface = IMG_Load(FLAG_ICON);
+	coverIconSurface = IMG_Load(COVER_ICON);
+	
 	// Returns true if all is ok.
 	return true;
 }
@@ -149,7 +161,7 @@ void wait_interval()
 {
 	if (win || lose)
 	{
-		Sleep(3000);
+		SDL_Delay(5000);
 		main_menu_is_running = true;
 		stage_is_running = false;
 	}	
@@ -164,8 +176,13 @@ void process_input()
 		// If main menu is running...
 		if (main_menu_is_running && !select_menu_is_running && !stage_is_running)
 		{			
+			showMines = false;
+			resetIJ = true;
 			win = false;
 			lose = false;
+			ij_selected[0] = NULL;
+			ij_selected[1] = NULL;
+			ij_selected[2] = NULL;
 			counter1 = counter2 = counter3 = formField = 0;
 			memset(paramInput1, 0, sizeof paramInput1);
 			memset(paramInput2, 0, sizeof paramInput2);
@@ -280,7 +297,7 @@ void process_input()
 						strcat(paramInput2, event.text.text);
 						counter2 += TEXT_BOX_FINE_ADJUSTEMENT;
 					}
-					else if (paramInput3[1] == '\0' && formField == 2)
+					else if (paramInput3[2] == '\0' && formField == 2)
 					{
 						SDL_SetTextInputRect(&width_field_label);
 						strcat(paramInput3, event.text.text);
@@ -602,25 +619,54 @@ void render()
 					clickedL = false;
 					clickedR = false;
 				}
+
 				if (c->mat[i][j] == MINE)
 				{
 					SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
 					SDL_RenderFillRect(renderer, &tile_square);
+					f->mat[i][j] = MINE_TRIG;
+
+					// Shows a custom icon for mines.					
+					mineDeathIconTexture = SDL_CreateTextureFromSurface(renderer, mineDeathIconSurface);
+					SDL_RenderCopy(renderer, mineDeathIconTexture, NULL, &tile_square);
+					SDL_DestroyTexture(mineDeathIconTexture);
+					showMines = true;
+					if (resetIJ == true)
+					{
+						i = j = 0;
+						resetIJ = false;
+						break;
+					}
 				}
 				else if (c->mat[i][j] == EDGE_L_R || c->mat[i][j] == EDGE_T_B)
 				{
 					SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
 					SDL_RenderFillRect(renderer, &tile_square);
+
+					// Shows a custom icon for edges.					
+					edgeIconTexture = SDL_CreateTextureFromSurface(renderer, edgeIconSurface);
+					SDL_RenderCopy(renderer, edgeIconTexture, NULL, &tile_square);
+					SDL_DestroyTexture(edgeIconTexture);
 				}
 				else if (c->mat[i][j] == FLAG)
 				{
 					SDL_SetRenderDrawColor(renderer, 127, 255, 0, 255);
 					SDL_RenderFillRect(renderer, &tile_square);
+
+					// Shows a custom icon for flags.					
+					flagIconTexture = SDL_CreateTextureFromSurface(renderer, flagIconSurface);
+					SDL_RenderCopy(renderer, flagIconTexture, NULL, &tile_square);
+					SDL_DestroyTexture(flagIconTexture);
 				}
 				else if (c->mat[i][j] == COVER)
 				{
 					SDL_SetRenderDrawColor(renderer, 64, 64, 128, 255);
 					SDL_RenderFillRect(renderer, &tile_square);
+
+					// Shows a custom icon for cover.					
+					coverIconTexture = SDL_CreateTextureFromSurface(renderer, coverIconSurface);
+					SDL_RenderCopy(renderer, coverIconTexture, NULL, &tile_square);
+					SDL_DestroyTexture(coverIconTexture);
 				}
 				else if (c->mat[i][j] == 0)
 				{
@@ -641,9 +687,19 @@ void render()
 					SDL_RenderCopy(renderer, gameTextTexture, NULL, &tile_square);
 					SDL_FreeSurface(gameTextSurface);
 					SDL_DestroyTexture(gameTextTexture);
+				}	
+
+				// If the player dies, show all the hidden mines.
+				if (f->mat[i][j] == MINE && showMines)
+				{
+					// Shows a custom icon for mines.					
+					mineBoomIconTexture = SDL_CreateTextureFromSurface(renderer, mineBoomIconSurface);
+					SDL_RenderCopy(renderer, mineBoomIconTexture, NULL, &tile_square);
+					SDL_DestroyTexture(mineBoomIconTexture);
 				}
 			}
 		}
+
 		// If player wins, show a victory banner and deallocates lower and upper fields.
 		if (win)
 		{
