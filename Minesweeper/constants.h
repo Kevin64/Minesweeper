@@ -88,7 +88,7 @@
 
 #define FONT_SIZE 200
 #define FONT_PATH "nasalization-rg.otf"
-#define ALPHA_UNSELECTED 96
+#define ALPHA_UNSELECTED 64
 #define ALPHA_SELECTED 127
 
 #define WINDOW_ICON "window_icon.bmp"
@@ -98,12 +98,21 @@
 #define EDGE_ICON "edge_icon.bmp"
 #define COVER_ICON "cover_icon.bmp"
 
+#define BACKGROUND_MUSIC_MENU "space-exploration.mp3"
+#define BACKGROUND_MUSIC_STAGE "hypnosphere.mp3"
+#define SOUND_EFFECT_L "mixkit-select-click-1109.wav"
+#define SOUND_EFFECT_R "mixkit-negative-tone-interface-tap-2569.wav"
+#define SOUND_EFFECT_MENU "mixkit-cool-interface-click-tone-2568.wav"
+#define SOUND_EFFECT_MINE "mixkit-arcade-game-explosion-echo-1698.wav"
+#define SOUND_EFFECT_VICTORY "mixkit-warfare-horn-2289.wav"
+
 #define ERROR_SDL_INIT "Error initializing SDL.\n"
 #define ERROR_SDL_WINDOW "Error creating SDL Window.\n"
 #define ERROR_SDL_RENDERER "Error creating SDL Renderer.\n"
 #define ERROR_SDL_TTF "Error initializing SDL_TTF.\n"
+#define ERROR_SDL_AUDIO "Error initializing SDL Audio.\n"
 
-#define AUTHOR "Campo Minado - v2.0.0.2109-beta2 - Implementado por Kevin Costa."
+#define AUTHOR "Campo Minado - v2.0.0.2109-beta3 - Implementado por Kevin Costa."
 
 #define NEW_GAME_TEXT "Novo jogo"
 #define QUIT_GAME_TEXT "Sair do jogo"

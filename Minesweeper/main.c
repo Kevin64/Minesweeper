@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
+#include <SDL_mixer.h>
 #include "initField.h"
 #include "fillField.h"
 #include "printEngine.h"
@@ -26,6 +27,8 @@ SDL_Color colorSelectInput = COLOR_SEL_INPT;
 SDL_Color colorAlert = COLOR_ALERT;
 SDL_Color colorMenuText = COLOR_MENU_TEXT;
 TTF_Font *font;
+Mix_Music *backgroundMusicMenu, *backgroundMusicStage;
+Mix_Chunk *soundEffectL, *soundEffectR, *soundEffectMine, *soundEffectMenu, *soundEffectVictory;
 SDL_Surface *menuTextSurface1, *menuTextSurface2, *finaleTextSurface, *gameTextSurface, *titleTextSurface, *widthTextSurface, *widthInputSurface, *heightInputSurface, *mineInputSurface, *alertTextSurface, *windowIconSurface, *mineIconSurface, *mineBoomIconSurface, *mineDeathIconSurface, *flagIconSurface, *edgeIconSurface, *coverIconSurface;
 SDL_Texture *menuTextTexture1, *menuTextTexture2, *finaleTextTexture, *gameTextTexture, *titleTextTexture, *widthTextTexture, *widthInputTexture, *heightInputTexture, *mineInputTexture, *alertTextTexture, *windowIconTexture, *mineIconTexture, *mineBoomIconTexture, *mineDeathIconTexture, *flagIconTexture, *edgeIconTexture, *coverIconTexture;
 SDL_Rect new_game_button, quit_game_button, tile_square, width_field_textbox, width_field_label, height_field_textbox, height_field_label, mine_amount_textbox, mine_amount_label, ok_button_rect;
@@ -43,9 +46,10 @@ bool canOpen = false;
 bool canFlag = false;
 bool showMines = false;
 bool resetIJ = true;
+bool soundPlayed = false;
 int last_frame_time = 0;
 int length, option = 0, formField = 0;
-int alpha1 = ALPHA_UNSELECTED, alpha2 = ALPHA_UNSELECTED, alpha3 = ALPHA_UNSELECTED;
+int alpha1 = ALPHA_UNSELECTED, alpha2 = ALPHA_UNSELECTED, alpha3 = ALPHA_UNSELECTED, alpha4 = ALPHA_UNSELECTED;
 int i, j, counter1 = 1, counter2 = 1, counter3 = 1;
 int ij_selected[3];
 int xm, ym, xi, xf, yi, yf;
@@ -66,6 +70,7 @@ bool initialize_window(void)
 		fprintf(stderr, ERROR_SDL_INIT);
 		return false;
 	}
+
 	// Create window with those parameters.
 	window = SDL_CreateWindow(
 		TITLE, // Title in titlebar.
@@ -75,6 +80,7 @@ bool initialize_window(void)
 		WINDOW_HEIGHT, // Window height.
 		SDL_WINDOW_ALLOW_HIGHDPI // Flag for HiDPI support.
 	);
+
 	// If can't create window, outputs an error message.
 	if (!window)
 	{
@@ -83,6 +89,7 @@ bool initialize_window(void)
 	}
 	// Initializes SDL renderer.
 	renderer = SDL_CreateRenderer(window, -1, 0);
+
 	// If can't create renderer, outputs an error message.
 	if (!renderer)
 	{
@@ -112,6 +119,20 @@ bool initialize_window(void)
 	flagIconSurface = IMG_Load(FLAG_ICON);
 	coverIconSurface = IMG_Load(COVER_ICON);
 	
+	// If can't create audio, outputs an error message.
+	if (Mix_OpenAudio(44800, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
+	{
+		fprintf(stderr, ERROR_SDL_AUDIO);
+		return false;
+	}
+	backgroundMusicMenu = Mix_LoadMUS(BACKGROUND_MUSIC_MENU); // Loads background music in menus.
+	backgroundMusicStage = Mix_LoadMUS(BACKGROUND_MUSIC_STAGE); // Loads background music in stage.
+	soundEffectL = Mix_LoadWAV(SOUND_EFFECT_L); // Loads sound effect for left mouse click.
+	soundEffectR = Mix_LoadWAV(SOUND_EFFECT_R); // Loads sound effect for right mouse click.
+	soundEffectMenu = Mix_LoadWAV(SOUND_EFFECT_MENU); // Loads sound effect for menu hover/click.
+	soundEffectMine = Mix_LoadWAV(SOUND_EFFECT_MINE); // Loads sound effect for defeat.
+	soundEffectVictory = Mix_LoadWAV(SOUND_EFFECT_VICTORY); // Loads sound effect for victory.
+
 	// Returns true if all is ok.
 	return true;
 }
@@ -156,7 +177,7 @@ void setup_stage(int w, int h, int m)
 	countMines(f); // Calculates the amount of mines and fills tips on mines's neighborhoods.
 }
 
-// When a game is finished, waits 3 seconds before going back to the main menu.
+// When a game is finished, waits 3 seconds ans stops music before going back to the main menu.
 void wait_interval()
 {
 	if (win || lose)
@@ -164,6 +185,7 @@ void wait_interval()
 		SDL_Delay(5000);
 		main_menu_is_running = true;
 		stage_is_running = false;
+		Mix_HaltMusic();
 	}	
 }
 
@@ -187,6 +209,10 @@ void process_input()
 			memset(paramInput1, 0, sizeof paramInput1);
 			memset(paramInput2, 0, sizeof paramInput2);
 			memset(paramInput3, 0, sizeof paramInput3);
+
+			// If background menu music is not playing, starts to play.
+			if (!Mix_PlayingMusic())
+				Mix_PlayMusic(backgroundMusicMenu, -1);
 
 			// ... wait for an input event.
 			switch (event.type)
@@ -318,7 +344,11 @@ void process_input()
 		}
 		// If stage is running...
 		else if (!main_menu_is_running && !select_menu_is_running && stage_is_running)
-		{			
+		{		
+			// If background stage music is not playing, starts to play.
+			if (!Mix_PlayingMusic())
+				Mix_PlayMusic(backgroundMusicStage, -1);
+
 			// ... wait for an input event.
 			switch (event.type)
 			{
@@ -334,6 +364,7 @@ void process_input()
 				// ... and it's the Escape key, returns to main menu.
 				if (event.key.keysym.sym == SDLK_ESCAPE)
 				{
+					Mix_HaltMusic(); // Stops playing stage music.
 					main_menu_is_running = true;
 					select_menu_is_running = false;
 					stage_is_running = false;
@@ -399,6 +430,12 @@ void render()
 		// If mouse is over new game button, highlights itself and if clicked, go to select size/mines screen.
 		if (xm >= new_game_button.x && xm <= new_game_button.x + new_game_button.w && ym >= new_game_button.y && ym <= new_game_button.y + new_game_button.h)
 		{
+			// If sound effect has not been played yet, plays once if the mouse stays inside the button area.
+			if (!soundPlayed)
+			{
+				Mix_PlayChannel(-1, soundEffectMenu, 0);
+				soundPlayed = true;
+			}			
 			option = 0;
 			if (clickedL)
 			{
@@ -410,6 +447,12 @@ void render()
 		// Else if mouse is over quit game button, highlights itself and if clicked, quits the game.
 		else if (xm >= quit_game_button.x && xm <= quit_game_button.x + quit_game_button.w && ym >= quit_game_button.y && ym <= quit_game_button.y + quit_game_button.h)
 		{
+			// If sound effect has not been played yet, plays once if the mouse stays inside the button area.
+			if (!soundPlayed)
+			{
+				Mix_PlayChannel(-1, soundEffectMenu, 0);
+				soundPlayed = true;
+			}
 			option = 1;
 			if (clickedL)
 			{
@@ -420,6 +463,8 @@ void render()
 				clickedL = false;
 			}
 		}
+		else
+			soundPlayed = false; // If the mouse exits any button area, sets sound effect to play again on collision.
 
 		// Highlisghts new game button.
 		if (option == 0)
@@ -492,7 +537,7 @@ void render()
 		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorForm, width_field_label, WIDTH_TEXT, 0, 0, 0, 255);
 		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorForm, height_field_label, HEIGHT_TEXT, 0, 0, 0, 255);
 		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorForm, mine_amount_label, MINE_AMOUNT_TEXT, 0, 0, 0, 255);
-		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorButton, ok_button_rect, OK_BUTTON_TEXT, 0, 180, 30, 255);
+		printFormText(renderer, widthTextSurface, widthTextTexture, font, colorButton, ok_button_rect, OK_BUTTON_TEXT, 0, 180, 30, alpha4);
 
 		// Draws each textbox for input.
 		SDL_SetRenderDrawColor(renderer, 127, 127, 127, alpha1);
@@ -506,27 +551,54 @@ void render()
 		// If the mouse is over the width textbox, and a click is detected, selects that box for input.
 		if (xm >= width_field_textbox.x && xm <= width_field_textbox.x + width_field_textbox.w && ym >= width_field_textbox.y && ym <= width_field_textbox.y + width_field_textbox.h)
 		{
+			// If sound effect has not been played yet, plays once if the mouse stays inside the textbox area.
+			if (!soundPlayed)
+			{
+				Mix_PlayChannel(-1, soundEffectMenu, 0);
+				soundPlayed = true;
+			}
 			if (clickedL)
 				formField = 0;
 		}
 		// If the mouse is over the height textbox, and a click is detected, selects that box for input.
 		else if (xm >= height_field_textbox.x && xm <= height_field_textbox.x + height_field_textbox.w && ym >= height_field_textbox.y && ym <= height_field_textbox.y + height_field_textbox.h)
 		{
+			// If sound effect has not been played yet, plays once if the mouse stays inside the textbox area.
+			if (!soundPlayed)
+			{
+				Mix_PlayChannel(-1, soundEffectMenu, 0);
+				soundPlayed = true;
+			}
 			if (clickedL)
 				formField = 1;
 		}
 		// If the mouse is over the mine textbox, and a click is detected, selects that box for input.
 		else if (xm >= mine_amount_textbox.x && xm <= mine_amount_textbox.x + mine_amount_textbox.w && ym >= mine_amount_textbox.y && ym <= mine_amount_textbox.y + mine_amount_textbox.h)
 		{
+			// If sound effect has not been played yet, plays once if the mouse stays inside the textbox area.
+			if (!soundPlayed)
+			{
+				Mix_PlayChannel(-1, soundEffectMenu, 0);
+				soundPlayed = true;
+			}
 			if (clickedL)
 				formField = 2;
 		}
 		// If the mouse is over the ok button, and a click is detected, starts a new stage.
 		else if (xm >= ok_button_rect.x && xm <= ok_button_rect.x + ok_button_rect.w && ym >= ok_button_rect.y && ym <= ok_button_rect.y + ok_button_rect.h)
 		{
+			alpha4 = ALPHA_SELECTED * 2; // Highlights OK button.
+			// If sound effect has not been played yet, plays once if the mouse stays inside the button area.
+			if (!soundPlayed)
+			{
+				Mix_PlayChannel(-1, soundEffectMenu, 0);
+				soundPlayed = true;
+			}
 			if (clickedL)
 				formField = 3;
 		}
+		else
+			soundPlayed = false; // If the mouse exits any textbox/button area, sets sound effect to play again on collision.
 		
 		// Highlights the width textbox.
 		if (formField == 0)
@@ -534,20 +606,19 @@ void render()
 			alpha1 = ALPHA_SELECTED;
 			alpha2 = ALPHA_UNSELECTED;
 			alpha3 = ALPHA_UNSELECTED;
-			// SDL_RenderFillRect(renderer, &width_field_textbox);
 		}
 		// Highlights the height textbox.
 		if (formField == 1)
 		{
 			alpha1 = ALPHA_UNSELECTED;
-			alpha2 = ALPHA_SELECTED;			//SDL_RenderFillRect(renderer, &height_field_textbox);
+			alpha2 = ALPHA_SELECTED;
 			alpha3 = ALPHA_UNSELECTED;
 		}
 		// Highlights the mine textbox.
 		if (formField == 2)
 		{
 			alpha1 = ALPHA_UNSELECTED;
-			alpha2 = ALPHA_UNSELECTED;			//SDL_RenderFillRect(renderer, &mine_amount_textbox);
+			alpha2 = ALPHA_UNSELECTED;
 			alpha3 = ALPHA_SELECTED;
 		}
 		// Grab width, height and mine amount and starts a new stage.
@@ -561,11 +632,10 @@ void render()
 			{
 				select_menu_is_running = false;
 				stage_is_running = true;
+				Mix_HaltMusic(); // Stops background menu music.
 			}
 			else
-			{
 				printAlert(renderer, alertTextSurface, alertTextTexture, font, colorAlert);
-			}
 		}
 
 		SDL_RenderPresent(renderer);
@@ -604,6 +674,9 @@ void render()
 				{
 					if (clickedL)
 					{
+						// If cover has not been opened yet, plays the left click sound.
+						if(c->mat[i][j] != f->mat[i][j])
+							Mix_PlayChannel(-1, soundEffectL, 0);
 						canOpen = true;
 						ij_selected[0] = i;
 						ij_selected[1] = j;
@@ -611,6 +684,9 @@ void render()
 					}
 					if (clickedR)
 					{
+						// If cover has not been opened yet, plays the right click sound.
+						if (c->mat[i][j] != f->mat[i][j])
+							Mix_PlayChannel(-1, soundEffectR, 0);
 						canFlag = true;
 						ij_selected[0] = i;
 						ij_selected[1] = j;
@@ -703,6 +779,7 @@ void render()
 		// If player wins, show a victory banner and deallocates lower and upper fields.
 		if (win)
 		{
+			Mix_PlayChannel(-1, soundEffectVictory, 0); // Plays a victory sound.
 			printFinish(f, c, renderer, finaleTextSurface, finaleTextTexture, font, colorTip, true);
 			free(f);
 			f = NULL;
@@ -713,6 +790,7 @@ void render()
 		// If player wins, show a defeat banner and deallocates lower and upper fields.
 		if (lose)
 		{
+			Mix_PlayChannel(-1, soundEffectMine, 0); // PLays a defeat sound.
 			printFinish(f, c, renderer, finaleTextSurface, finaleTextTexture, font, colorTip, false);
 			free(f);
 			f = NULL;
@@ -725,10 +803,18 @@ void render()
 	}	
 }
 
-// Closes window and terminate process.
+// Closes window, free memory from stuff and terminate process.
 void destroy_window()
 {
 	TTF_CloseFont(font);
+	Mix_FreeMusic(backgroundMusicMenu);
+	Mix_FreeMusic(backgroundMusicStage);
+	Mix_FreeChunk(soundEffectL);
+	Mix_FreeChunk(soundEffectR);
+	Mix_FreeChunk(soundEffectMenu);
+	Mix_FreeChunk(soundEffectMine);
+	Mix_FreeChunk(soundEffectVictory);
+	Mix_Quit();
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	TTF_Quit();
@@ -740,7 +826,6 @@ int main(int argc, char* argv[])
 {
 	// If everything is initialized, game_is_running equals true.
 	game_is_running = initialize_window();
-
 	main_menu_is_running = game_is_running;
 		
 	while (game_is_running)
@@ -766,7 +851,7 @@ int main(int argc, char* argv[])
 			process_input(); // Process user mouse/keyboard inputs in stage.
 			update(); // Process game objects states in stage.
 			render(); // Process object rendering in stage.
-			wait_interval();
+			wait_interval(); // When a game is finished, waits 3 seconds ans stops music before going back to the main menu.
 		}		
 	}
 	
