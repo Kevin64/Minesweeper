@@ -87,24 +87,24 @@
 #define FRAME_TARGET_TIME (1000 / FPS)
 
 #define FONT_SIZE 200
-#define FONT_PATH "nasalization-rg.otf"
+#define FONT_PATH "resources\\fonts\\nasalization-rg.otf"
 #define ALPHA_UNSELECTED 64
 #define ALPHA_SELECTED 127
 
-#define WINDOW_ICON "window_icon.bmp"
-#define MINE_BOOM_ICON "mine_boom_icon.bmp"
-#define MINE_DEATH_ICON "mine_death_icon.bmp"
-#define FLAG_ICON "flag_icon.bmp"
-#define EDGE_ICON "edge_icon.bmp"
-#define COVER_ICON "cover_icon.bmp"
+//#define WINDOW_ICON "resources\\icons\\window_icon.bmp"
+#define MINE_BOOM_ICON "resources\\icons\\mine_boom_icon.bmp"
+#define MINE_DEATH_ICON "resources\\icons\\mine_death_icon.bmp"
+#define FLAG_ICON "resources\\icons\\flag_icon.bmp"
+#define EDGE_ICON "resources\\icons\\edge_icon.bmp"
+#define COVER_ICON "resources\\icons\\cover_icon.bmp"
 
-#define BACKGROUND_MUSIC_MENU "space-exploration.mp3"
-#define BACKGROUND_MUSIC_STAGE "hypnosphere.mp3"
-#define SOUND_EFFECT_L "mixkit-select-click-1109.wav"
-#define SOUND_EFFECT_R "mixkit-negative-tone-interface-tap-2569.wav"
-#define SOUND_EFFECT_MENU "mixkit-cool-interface-click-tone-2568.wav"
-#define SOUND_EFFECT_MINE "mixkit-arcade-game-explosion-echo-1698.wav"
-#define SOUND_EFFECT_VICTORY "mixkit-warfare-horn-2289.wav"
+#define BACKGROUND_MUSIC_MENU "resources\\sounds\\bg-menu_space-exploration.mp3"
+#define BACKGROUND_MUSIC_STAGE "resources\\sounds\\bg-stage_hypnosphere.mp3"
+#define SOUND_EFFECT_L "resources\\sounds\\effect-left-click_mixkit-select-click-1109.wav"
+#define SOUND_EFFECT_R "resources\\sounds\\effect-right-click_mixkit-negative-tone-interface-tap-2569.wav"
+#define SOUND_EFFECT_MENU "resources\\sounds\\effect-menu_mixkit-cool-interface-click-tone-2568.wav"
+#define SOUND_EFFECT_MINE "resources\\sounds\\effect-defeat_mixkit-arcade-game-explosion-echo-1698.wav"
+#define SOUND_EFFECT_VICTORY "resources\\sounds\\effect-victory_mixkit-warfare-horn-2289.wav"
 
 #define ERROR_SDL_INIT "Error initializing SDL.\n"
 #define ERROR_SDL_WINDOW "Error creating SDL Window.\n"

@@ -109,8 +109,8 @@ bool initialize_window(void)
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
 	// Sets the window icon.
-	windowIconSurface = IMG_Load(WINDOW_ICON);
-	SDL_SetWindowIcon(window, windowIconSurface);
+	//windowIconSurface = IMG_Load(WINDOW_ICON);
+	//SDL_SetWindowIcon(window, windowIconSurface);
 
 	// Sets icons for assets.
 	mineBoomIconSurface = IMG_Load(MINE_BOOM_ICON);
@@ -598,7 +598,10 @@ void render()
 				formField = 3;
 		}
 		else
+		{
+			alpha4 = ALPHA_UNSELECTED; // Darkens OK button if mouse os not over it.
 			soundPlayed = false; // If the mouse exits any textbox/button area, sets sound effect to play again on collision.
+		}
 		
 		// Highlights the width textbox.
 		if (formField == 0)
