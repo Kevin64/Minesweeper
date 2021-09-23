@@ -20,3 +20,4 @@ Debug/zlib1.dll
 *.res
 *.7z
 Debug/nasalization-rg.otf
+*.enc

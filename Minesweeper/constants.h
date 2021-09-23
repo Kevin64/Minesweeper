@@ -11,13 +11,13 @@
 #define HEIGHT_MAX 16
 #define MINE_MIN 0
 
-#define ALERT "Intervalo fora do especificado!"
+#define ALERT "Parâmetros inválidos!"
 
 #define BUTTON_X 0
 #define BUTTON_Y 0
 #define BUTTON_W 450
 #define BUTTON_H 100
-#define BUTTON_SPACING 200
+#define BUTTON_SPACING 150
 
 #define WIDTH_TEXT "Digite a largura do campo: (min 3, max 30)"
 #define HEIGHT_TEXT "Digite a altura do campo: (min 3, max 15)"
@@ -64,26 +64,26 @@
 #define COLOR_MENU_TEXT {0, 0, 0, 255}
 
 #define FINISH_BANNER_X 0
-#define FINISH_BANNER_Y WINDOW_HEIGHT - WINDOW_HEIGHT / 4
+#define FINISH_BANNER_Y WINDOW_HEIGHT / 3
 #define FINISH_BANNER_W WINDOW_WIDTH
-#define FINISH_BANNER_H 180
+#define FINISH_BANNER_H WINDOW_HEIGHT / 3
 
 #define ALERT_BANNER_X 0
 #define ALERT_BANNER_Y WINDOW_HEIGHT / 3
 #define ALERT_BANNER_W WINDOW_WIDTH
-#define ALERT_BANNER_H 120
+#define ALERT_BANNER_H WINDOW_HEIGHT / 3
 
 #define X_FINE_ADJUSTEMENT 2
-#define Y_FINE_ADJUSTEMENT 25
+#define Y_FINE_ADJUSTEMENT 0
 #define TEXT_BOX_FINE_ADJUSTEMENT 50
 
-#define TITLE "Minesweeper"
-#define TITLE_X 0
-#define TITLE_Y 0
-#define TITLE_W WINDOW_WIDTH
-#define TITLE_H 50
+#define TITLE "Minesweeper in SDL"
+#define TITLE_H 20
+#define TITLE_X WINDOW_WIDTH / 2
+#define TITLE_Y WINDOW_HEIGHT - TITLE_H
+#define TITLE_W WINDOW_WIDTH - WINDOW_WIDTH / 2
 
-#define FPS 30
+#define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 
 #define FONT_SIZE 200
@@ -97,6 +97,10 @@
 #define FLAG_ICON "resources\\icons\\flag_icon.bmp"
 #define EDGE_ICON "resources\\icons\\edge_icon.bmp"
 #define COVER_ICON "resources\\icons\\cover_icon.bmp"
+#define BACKGROUND_WALLPAPER "resources\\icons\\background_menu.bmp"
+#define NEW_OK_BUTTON "resources\\icons\\new_ok_button.bmp"
+#define QUIT_BUTTON "resources\\icons\\quit_button.bmp"
+#define PRESENTATION "resources\\icons\\menu_presentation.png"
 
 #define BACKGROUND_MUSIC_MENU "resources\\sounds\\bg-menu_space-exploration.mp3"
 #define BACKGROUND_MUSIC_STAGE "resources\\sounds\\bg-stage_hypnosphere.mp3"
@@ -111,11 +115,12 @@
 #define ERROR_SDL_RENDERER "Error creating SDL Renderer.\n"
 #define ERROR_SDL_TTF "Error initializing SDL_TTF.\n"
 #define ERROR_SDL_AUDIO "Error initializing SDL Audio.\n"
+#define ERROR_SDL_INIT_PNG "Error initializing PNG support.\n"
 
-#define AUTHOR "Campo Minado - v2.0.0.2109-beta3 - Implementado por Kevin Costa."
+#define AUTHOR "Campo Minado - v2.0.0.2109-beta3 - Implementado por Kevin Costa"
 
-#define NEW_GAME_TEXT "Novo jogo"
-#define QUIT_GAME_TEXT "Sair do jogo"
+#define NEW_GAME_TEXT "  Novo jogo  "
+#define QUIT_GAME_TEXT " Sair do jogo "
 
 #define WIN_TEXT "Você venceu!"
 #define LOSE_TEXT "Você perdeu!"
