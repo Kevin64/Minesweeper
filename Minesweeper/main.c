@@ -21,12 +21,13 @@ SDL_Renderer *renderer = NULL;
 SDL_Event event;
 SDL_Color colorTip = COLOR_TIP;
 SDL_Color colorTitle = COLOR_TITLE;
+SDL_Color colorInfo;
 SDL_Color colorForm = COLOR_FORM;
 SDL_Color colorButton = COLOR_BUTTON;
 SDL_Color colorSelectInput = COLOR_SEL_INPT;
 SDL_Color colorAlert = COLOR_ALERT;
 SDL_Color colorMenuText = COLOR_MENU_TEXT;
-TTF_Font *font;
+TTF_Font *font_main, *font_secondary;
 Mix_Music *backgroundMusicMenu,
 			*backgroundMusicStage;
 Mix_Chunk *soundEffectL,
@@ -44,6 +45,7 @@ SDL_Surface //*windowIconSurface,
 			*textInputSurface,
 			*okButtonSurface,
 			*alertTextSurface,	
+			*infoTextSurface,
 			*tileTextSurface,
 			*mineIconSurface,
 			*mineBoomIconSurface,
@@ -62,6 +64,7 @@ SDL_Texture //*windowIconTexture,
 			*textInputTexture,
 			*okButtonTexture,
 			*alertTextTexture,	
+			*infoTextTexture,
 			*tileTextTexture,
 			*mineIconTexture,
 			*mineBoomIconTexture,
@@ -82,6 +85,7 @@ SDL_Rect bgScrollRect1,
 		mineAmountLabelRect,
 		mineAmountTextboxRect,		
 		okButtonRect,
+		infoRect,
 		tileSquareRect;
 
 // Game global variables.
@@ -93,8 +97,7 @@ bool clickedL = false;
 bool clickedR = false;
 bool win = false;
 bool lose = false;
-bool canOpen = false;
-bool canFlag = false;
+bool canInteract = false;
 bool showMines = false;
 bool resetIJ = true;
 bool soundEffectPlayed = false;
@@ -108,9 +111,10 @@ int button_x, button_y, button_w, button_h;
 int w, h, m;
 int centerFieldX, centerFieldY, centerFormTextX, centerFormInputX;
 int angle = 0;
+int mineRemainingInt;
 float delta_time = 0.0f;
 char *aux;
-char paramInput1[3], paramInput2[3], paramInput3[4];
+char paramInput1[3], paramInput2[3], paramInput3[4], mineRemainingStr[4], mineRemainingConcat[18] = MINE_INGAME_INFO;
 field_t *f, *c;
 
 // Initializes window.
@@ -149,13 +153,14 @@ bool initialize_window(void)
 		return false;
 	}
 
-	// Initializes the font through SDL_TTF.
+	// Initializes the font_main through SDL_TTF.
 	if (TTF_Init() != 0)
 	{
 		fprintf(stderr, ERROR_SDL_TTF);
 		return false;
 	}
-	font = TTF_OpenFont(FONT_PATH, FONT_SIZE);
+	font_main = TTF_OpenFont(FONT_PATH_MAIN, FONT_SIZE);
+	font_secondary = TTF_OpenFont(FONT_PATH_SECONDARY, FONT_SIZE);
 	
 	// Sets the alpha channel for blending.
 	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
@@ -172,7 +177,7 @@ bool initialize_window(void)
 		return false;
 	}
 
-	// Sets icons for assets.
+	// Sets icons and images for assets.
 	bgScrollSurface = IMG_Load(BACKGROUND_WALLPAPER);
 	menuPresentationSurface = IMG_Load(PRESENTATION);
 	menuTextSurface1 = IMG_Load(NEW_OK_BUTTON);
@@ -203,10 +208,15 @@ bool initialize_window(void)
 	bgScrollRect1.y = 0;
 	bgScrollRect1.w = WINDOW_WIDTH;
 	bgScrollRect1.h = WINDOW_HEIGHT;
-	bgScrollRect2.x = -WINDOW_WIDTH;
-	bgScrollRect2.y = 0;
+	bgScrollRect2.x = 0;
+	bgScrollRect2.y = -WINDOW_HEIGHT;
 	bgScrollRect2.w = WINDOW_WIDTH;
-	bgScrollRect2.h = WINDOW_HEIGHT;	
+	bgScrollRect2.h = WINDOW_HEIGHT;
+
+	infoRect.x = 0;
+	infoRect.y = 0;
+	infoRect.w = 200;
+	infoRect.h = 20;
 
 	// Returns true if all is ok.
 	return true;
@@ -487,22 +497,44 @@ void update()
 	// If both lower and upper fields are still allocated, player can open/flag tiles, and then game checks to victory or defeat.
 	if (f != NULL && c != NULL)
 	{
-		if (canOpen)
-			openField(f, c, ij_selected[0], ij_selected[1], ij_selected[2]);
-		if (canFlag)
-			openField(f, c, ij_selected[0], ij_selected[1], ij_selected[2]);
+		if (canInteract)
+			openField(f, c, ij_selected[0], ij_selected[1], ij_selected[2], &mineRemainingInt);
+
+		sprintf(mineRemainingStr, "%d", mineRemainingInt); // Transform the mine quantity into a string, for later exibition.
+		mineRemainingConcat[17] = '\0'; // Resets the string toa avoid infinite appending.
+		strcat(mineRemainingConcat, mineRemainingStr); // Concats the number of remaining mines with the fixed info text.
+
 		win = checkWin(f, c);
 		lose = checkLose(f, c, ij_selected);
-		canOpen = canFlag = false;
+		canInteract = canInteract = false;
+	}
+
+	if (mineRemainingInt < 0)
+	{
+		colorInfo.r = RED_INFO_NEGATIVE;
+		colorInfo.g = GREEN_INFO_NEGATIVE;
+		colorInfo.b = BLUE_INFO_NEGATIVE;
+	}
+	else if(mineRemainingInt > 0)
+	{
+		colorInfo.r = RED_INFO_POSITIVE;
+		colorInfo.g = GREEN_INFO_POSITIVE;
+		colorInfo.b = BLUE_INFO_POSITIVE;
+	}
+	else
+	{
+		colorInfo.r = RED_INFO_NEUTRAL;
+		colorInfo.g = GREEN_INFO_NEUTRAL;
+		colorInfo.b = BLUE_INFO_NEUTRAL;
 	}
 
 	// If background wallpaper left size reaches the rightmost side, resets to the start.
-	if (bgScrollRect1.x > WINDOW_WIDTH)
-		bgScrollRect1.x = 0;
-	if(bgScrollRect2.x > 0)
-		bgScrollRect2.x = -WINDOW_WIDTH;
-	bgScrollRect1.x += 4; // Slides wallpaper 1 to the right.
-	bgScrollRect2.x += 4; // Slides wallpaper 2 to the right.
+	if (bgScrollRect1.y > WINDOW_HEIGHT)
+		bgScrollRect1.y = 0;
+	if(bgScrollRect2.y > 0)
+		bgScrollRect2.y = -WINDOW_HEIGHT;
+	bgScrollRect1.y += 4; // Slides background 1 down.
+	bgScrollRect2.y += 4; // Slides background 2 down.
 	
 	// Changes the angle of presentation.
 	if (angle > 360)
@@ -524,6 +556,7 @@ void render()
 		bgScrollTexture = SDL_CreateTextureFromSurface(renderer, bgScrollSurface);
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect1);
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect2);
+
 		SDL_DestroyTexture(bgScrollTexture);
 		
 		// Presentation image.
@@ -540,7 +573,7 @@ void render()
 		SDL_DestroyTexture(menuTextTexture2);
 
 		// Prints title.
-		printTitle(renderer, titleTextSurface, titleTextTexture, font, colorTitle);
+		printTitle(renderer, titleTextSurface, titleTextTexture, font_main, colorTitle);
 
 		// If mouse is over new game button, highlights itself and if clicked, go to select size/mines screen.
 		if (xm >= menuButtonRect1.x && xm <= menuButtonRect1.x + menuButtonRect1.w && ym >= menuButtonRect1.y && ym <= menuButtonRect1.y + menuButtonRect1.h)
@@ -584,14 +617,14 @@ void render()
 		// Highlisghts new game button.
 		if (option == 0)
 		{
-			printFormText(renderer, menuTextSurface1, menuTextTexture1, font, colorMenuText, menuButtonRect1, NEW_GAME_TEXT, 0, 0, 0, 0);
-			printFormText(renderer, menuTextSurface2, menuTextTexture2, font, colorMenuText, menuButtonRect2, QUIT_GAME_TEXT, 0, 0, 0, 127);
+			printTextLine(renderer, menuTextSurface1, menuTextTexture1, font_main, colorMenuText, menuButtonRect1, NEW_GAME_TEXT, 0, 0, 0, 0);
+			printTextLine(renderer, menuTextSurface2, menuTextTexture2, font_main, colorMenuText, menuButtonRect2, QUIT_GAME_TEXT, 0, 0, 0, 127);
 		}
 		// Highlisghts quit game button.
 		else if (option == 1)
 		{
-			printFormText(renderer, menuTextSurface2, menuTextTexture2, font, colorMenuText, menuButtonRect1, NEW_GAME_TEXT, 0, 0, 0, 127);
-			printFormText(renderer, menuTextSurface2, menuTextTexture2, font, colorMenuText, menuButtonRect2, QUIT_GAME_TEXT, 0, 0, 0, 0);
+			printTextLine(renderer, menuTextSurface2, menuTextTexture2, font_main, colorMenuText, menuButtonRect1, NEW_GAME_TEXT, 0, 0, 0, 127);
+			printTextLine(renderer, menuTextSurface2, menuTextTexture2, font_main, colorMenuText, menuButtonRect2, QUIT_GAME_TEXT, 0, 0, 0, 0);
 		}	
 
 		SDL_RenderPresent(renderer);
@@ -609,7 +642,7 @@ void render()
 		SDL_DestroyTexture(bgScrollTexture);
 
 		// Prints title.
-		printTitle(renderer, titleTextSurface, titleTextTexture, font, colorTitle);
+		printTitle(renderer, titleTextSurface, titleTextTexture, font_main, colorTitle);
 
 		widthFieldLabelRect.y = WIDTH_TEXT_Y;
 		widthFieldLabelRect.w = WIDTH_TEXT_W;
@@ -622,7 +655,7 @@ void render()
 		centerFormInputX = ((WINDOW_WIDTH / 2) - (widthFieldTextboxRect.w) / 2); // Centralizes the text/form/button at the center of the window width.
 		widthFieldTextboxRect.h = WIDTH_INPUT_H;
 		widthFieldTextboxRect.x = centerFormInputX;
-		printFormText(renderer, textInputSurface, textInputTexture, font, colorForm, widthFieldTextboxRect, paramInput1, 0, 0, 0, 255);
+		printTextLine(renderer, textInputSurface, textInputTexture, font_main, colorForm, widthFieldTextboxRect, paramInput1, 0, 0, 0, 255);
 
 		heightFieldLabelRect.y = HEIGHT_TEXT_Y;
 		heightFieldLabelRect.w = HEIGHT_TEXT_W;
@@ -635,7 +668,7 @@ void render()
 		centerFormInputX = ((WINDOW_WIDTH / 2) - (heightFieldTextboxRect.w) / 2); // Centralizes the text/form/button at the center of the window width.
 		heightFieldTextboxRect.h = HEIGHT_INPUT_H;
 		heightFieldTextboxRect.x = centerFormInputX;
-		printFormText(renderer, textInputSurface, textInputTexture, font, colorForm, heightFieldTextboxRect, paramInput2, 0, 0, 0, 255);
+		printTextLine(renderer, textInputSurface, textInputTexture, font_main, colorForm, heightFieldTextboxRect, paramInput2, 0, 0, 0, 255);
 
 		mineAmountLabelRect.y = MINE_TEXT_Y;
 		mineAmountLabelRect.w = MINE_TEXT_W;
@@ -648,7 +681,7 @@ void render()
 		centerFormInputX = ((WINDOW_WIDTH / 2) - (mineAmountTextboxRect.w) / 2); // Centralizes the text/form/button at the center of the window width.
 		mineAmountTextboxRect.h = MINE_INPUT_H;
 		mineAmountTextboxRect.x = centerFormInputX;
-		printFormText(renderer, textInputSurface, textInputTexture, font, colorForm, mineAmountTextboxRect, paramInput3, 0, 0, 0, 255);
+		printTextLine(renderer, textInputSurface, textInputTexture, font_main, colorForm, mineAmountTextboxRect, paramInput3, 0, 0, 0, 255);
 
 		okButtonRect.y = OK_BUTTON_Y;
 		okButtonRect.w = OK_BUTTON_W;
@@ -657,14 +690,14 @@ void render()
 		okButtonRect.x = centerFormTextX;
 
 		// Draws each text label.
-		printFormText(renderer, labelSurface, labelTexture, font, colorForm, widthFieldLabelRect, WIDTH_TEXT, 0, 0, 0, 255);
-		printFormText(renderer, labelSurface, labelTexture, font, colorForm, heightFieldLabelRect, HEIGHT_TEXT, 0, 0, 0, 255);
-		printFormText(renderer, labelSurface, labelTexture, font, colorForm, mineAmountLabelRect, MINE_AMOUNT_TEXT, 0, 0, 0, 255);
+		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, widthFieldLabelRect, WIDTH_TEXT, 0, 0, 0, 255);
+		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, heightFieldLabelRect, HEIGHT_TEXT, 0, 0, 0, 255);
+		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, mineAmountLabelRect, MINE_AMOUNT_TEXT, 0, 0, 0, 255);
 
 		// Draws OK button
 		okButtonTexture = SDL_CreateTextureFromSurface(renderer, okButtonSurface);
 		SDL_RenderCopy(renderer, okButtonTexture, NULL, &okButtonRect);
-		printFormText(renderer, okButtonSurface, okButtonTexture, font, colorButton, okButtonRect, OK_BUTTON_TEXT, 0, 0, 0, alpha4);
+		printTextLine(renderer, okButtonSurface, okButtonTexture, font_main, colorButton, okButtonRect, OK_BUTTON_TEXT, 0, 0, 0, alpha4);
 		SDL_DestroyTexture(okButtonTexture);
 
 		// Draws each textbox for input.
@@ -686,7 +719,10 @@ void render()
 				soundEffectPlayed = true;
 			}
 			if (clickedL)
+			{
 				formField = 0;
+				clickedL = false;
+			}
 		}
 		// If the mouse is over the height textbox, and a click is detected, selects that box for input.
 		else if (xm >= heightFieldTextboxRect.x && xm <= heightFieldTextboxRect.x + heightFieldTextboxRect.w && ym >= heightFieldTextboxRect.y && ym <= heightFieldTextboxRect.y + heightFieldTextboxRect.h)
@@ -698,7 +734,10 @@ void render()
 				soundEffectPlayed = true;
 			}
 			if (clickedL)
+			{
 				formField = 1;
+				clickedL = false;
+			}
 		}
 		// If the mouse is over the mine textbox, and a click is detected, selects that box for input.
 		else if (xm >= mineAmountTextboxRect.x && xm <= mineAmountTextboxRect.x + mineAmountTextboxRect.w && ym >= mineAmountTextboxRect.y && ym <= mineAmountTextboxRect.y + mineAmountTextboxRect.h)
@@ -710,7 +749,10 @@ void render()
 				soundEffectPlayed = true;
 			}
 			if (clickedL)
+			{
 				formField = 2;
+				clickedL = false;
+			}
 		}
 		// If the mouse is over the ok button, and a click is detected, starts a new stage.
 		else if (xm >= okButtonRect.x && xm <= okButtonRect.x + okButtonRect.w && ym >= okButtonRect.y && ym <= okButtonRect.y + okButtonRect.h)
@@ -723,7 +765,10 @@ void render()
 				soundEffectPlayed = true;
 			}
 			if (clickedL)
+			{
 				formField = 3;
+				clickedL = false;
+			}
 		}
 		else
 		{
@@ -761,12 +806,13 @@ void render()
 			m = strtol(paramInput3, NULL, 10);
 			if (w > WIDTH_MIN && w < WIDTH_MAX && h > HEIGHT_MIN && h < HEIGHT_MAX && m > MINE_MIN && m < (w * h))
 			{
+				mineRemainingInt = m;
 				select_menu_is_running = false;
 				stage_is_running = true;
 				Mix_HaltMusic(); // Stops background menu music.
 			}
 			else
-				printAlert(renderer, alertTextSurface, alertTextTexture, font, colorAlert); // If field parameters are out of bounds, shows a banner alert.
+				printAlert(renderer, alertTextSurface, alertTextTexture, font_main, colorAlert); // If field parameters are out of bounds, shows a banner alert.
 		}
 
 		SDL_RenderPresent(renderer);
@@ -774,17 +820,22 @@ void render()
 	// If game is running.
 	else if (!main_menu_is_running && !select_menu_is_running && stage_is_running)
 	{
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+		SDL_SetRenderDrawColor(renderer, 64, 64, 64, 255);
 		SDL_RenderClear(renderer);
 		
 		// Background animation.
 		bgScrollTexture = SDL_CreateTextureFromSurface(renderer, bgScrollSurface);
+		SDL_SetTextureBlendMode(bgScrollTexture, SDL_BLENDMODE_BLEND); // Sets the blend mode for alpha transparency on textures.
+		SDL_SetTextureAlphaMod(bgScrollTexture, 64); // Sets the alpha transparency.
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect1);
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect2);
 		SDL_DestroyTexture(bgScrollTexture);
 
 		// Prints title.
-		printTitle(renderer, titleTextSurface, titleTextTexture, font, colorTitle);
+		printTitle(renderer, titleTextSurface, titleTextTexture, font_main, colorTitle);
+
+		// Prints the mine amount left.
+		printTextLine(renderer, infoTextSurface, infoTextTexture, font_secondary, colorInfo, infoRect, mineRemainingConcat, 0, 0, 0, 255);
 
 		i = 0;
 		j = 0;
@@ -816,7 +867,7 @@ void render()
 						// If cover has not been opened yet, plays the left click sound.
 						if(c->mat[i][j] != f->mat[i][j])
 							Mix_PlayChannel(-1, soundEffectL, 0);
-						canOpen = true;
+						canInteract = true;
 						ij_selected[0] = i;
 						ij_selected[1] = j;
 						ij_selected[2] = OPEN_F;
@@ -826,7 +877,7 @@ void render()
 						// If cover has not been opened yet, plays the right click sound.
 						if (c->mat[i][j] != f->mat[i][j])
 							Mix_PlayChannel(-1, soundEffectR, 0);
-						canFlag = true;
+						canInteract = true;
 						ij_selected[0] = i;
 						ij_selected[1] = j;
 						ij_selected[2] = FLAG_F;
@@ -897,7 +948,7 @@ void render()
 					SDL_SetRenderDrawColor(renderer, 75, 75, 75, 255);
 					SDL_RenderFillRect(renderer, &tileSquareRect);
 
-					tileTextSurface = TTF_RenderText_Blended(font, aux, colorTip);
+					tileTextSurface = TTF_RenderText_Blended(font_main, aux, colorTip);
 					tileTextTexture = SDL_CreateTextureFromSurface(renderer, tileTextSurface);
 					SDL_RenderCopy(renderer, tileTextTexture, NULL, &tileSquareRect);
 					SDL_FreeSurface(tileTextSurface);
@@ -919,7 +970,7 @@ void render()
 		if (win)
 		{
 			Mix_PlayChannel(-1, soundEffectVictory, 0); // Plays a victory sound.
-			printFinish(f, c, renderer, finaleTextSurface, finaleTextTexture, font, colorTip, true);
+			printFinish(f, c, renderer, finaleTextSurface, finaleTextTexture, font_main, colorTip, true);
 			free(f);
 			f = NULL;
 			free(c);
@@ -930,7 +981,7 @@ void render()
 		if (lose)
 		{
 			Mix_PlayChannel(-1, soundEffectMine, 0); // PLays a defeat sound.
-			printFinish(f, c, renderer, finaleTextSurface, finaleTextTexture, font, colorTip, false);
+			printFinish(f, c, renderer, finaleTextSurface, finaleTextTexture, font_main, colorTip, false);
 			free(f);
 			f = NULL;
 			free(c);
@@ -962,7 +1013,7 @@ void destroy_window()
 	SDL_FreeSurface(coverIconSurface);
 	SDL_FreeSurface(finaleTextSurface);
 
-	TTF_CloseFont(font);
+	TTF_CloseFont(font_main);
 	TTF_Quit();
 
 	Mix_FreeMusic(backgroundMusicMenu);

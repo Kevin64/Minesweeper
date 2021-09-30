@@ -94,7 +94,7 @@ void printTitle(SDL_Renderer *renderer, SDL_Surface *titleTextSurface, SDL_Textu
 	SDL_DestroyTexture(titleTextTexture);
 }
 
-void printFormText(SDL_Renderer *renderer, SDL_Surface *formTextSurface, SDL_Texture *formTextTexture, TTF_Font *font, SDL_Color color, SDL_Rect rect, char *text, int r, int g, int b, int a)
+void printTextLine(SDL_Renderer *renderer, SDL_Surface *formTextSurface, SDL_Texture *formTextTexture, TTF_Font *font, SDL_Color color, SDL_Rect rect, char *text, int r, int g, int b, int a)
 {
 	int length = snprintf(NULL, 0, "%s", text);
 	char *aux = malloc(length + 1);

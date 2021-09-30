@@ -35,7 +35,7 @@
 }
 
  // Opens slot and every empty (zero) slot adjacent to it (flood fill).
- void openField(field_t *f, field_t* c, int x, int y, int flag)
+ void openField(field_t *f, field_t* c, int x, int y, int flag, int *flagQty)
  {
 	 // If player opens and upper slot equals cover.
 	 if (flag == 1 && c->mat[x][y] == COVER)
@@ -47,12 +47,18 @@
 	 }
 	 // Else, if player flags upper slot and it's not flagged, flags.
 	 else if (flag == 2 && c->mat[x][y] != FLAG && c->mat[x][y] != f->mat[x][y])
+	 {
 		 c->mat[x][y] = FLAG;
+		 (*flagQty)--;
+	 }
 	 // Else, if player flags upper slot and it's not cover AND it's not flagged AND it's not mine, do nothing.
 	 else if (flag == 2 && c->mat[x][y] != COVER && c->mat[x][y] != FLAG && c->mat[x][y] != MINE)
 		 c->mat[x][y] = c->mat[x][y];
 	 // Else, if player flags upper slot and it's already flagged, covers again.
 	 else if (flag == 2 && c->mat[x][y] == FLAG)
+	 {
 		 c->mat[x][y] = COVER;
+		 (*flagQty)++;
+	 }
 	 else if (flag == 2 && c->mat[x][y] == f->mat[x][y]);
  }

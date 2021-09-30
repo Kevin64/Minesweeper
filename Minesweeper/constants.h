@@ -24,6 +24,8 @@
 #define MINE_AMOUNT_TEXT "Digite o número de minas: (min 1, max alt * larg - 1)"
 #define OK_BUTTON_TEXT "   OK   "
 
+#define MINE_INGAME_INFO "Minas restantes: "
+
 #define WIDTH_TEXT_Y 80
 #define WIDTH_TEXT_W WINDOW_WIDTH / 1.75
 #define WIDTH_TEXT_H 50
@@ -63,15 +65,26 @@
 #define COLOR_ALERT {0, 255, 255, 192}
 #define COLOR_MENU_TEXT {0, 0, 0, 255}
 
+#define RED_INFO_POSITIVE 122
+#define GREEN_INFO_POSITIVE 255
+#define BLUE_INFO_POSITIVE 133
+#define RED_INFO_NEGATIVE 255
+#define GREEN_INFO_NEGATIVE 38
+#define BLUE_INFO_NEGATIVE 38
+#define RED_INFO_NEUTRAL 255
+#define GREEN_INFO_NEUTRAL 255
+#define BLUE_INFO_NEUTRAL 255
+
+
 #define FINISH_BANNER_X 0
 #define FINISH_BANNER_Y WINDOW_HEIGHT / 3
 #define FINISH_BANNER_W WINDOW_WIDTH
 #define FINISH_BANNER_H WINDOW_HEIGHT / 3
 
 #define ALERT_BANNER_X 0
-#define ALERT_BANNER_Y WINDOW_HEIGHT / 3
+#define ALERT_BANNER_Y WINDOW_HEIGHT / 2.5
 #define ALERT_BANNER_W WINDOW_WIDTH
-#define ALERT_BANNER_H WINDOW_HEIGHT / 3
+#define ALERT_BANNER_H WINDOW_HEIGHT / 5
 
 #define X_FINE_ADJUSTEMENT 2
 #define Y_FINE_ADJUSTEMENT 0
@@ -86,8 +99,9 @@
 #define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 
-#define FONT_SIZE 200
-#define FONT_PATH "resources\\fonts\\nasalization-rg.otf"
+#define FONT_SIZE 100
+#define FONT_PATH_MAIN "resources\\fonts\\nasalization-rg.otf"
+#define FONT_PATH_SECONDARY "resources\\fonts\\GenericMobileSystem.ttf"
 #define ALPHA_UNSELECTED 64
 #define ALPHA_SELECTED 127
 
