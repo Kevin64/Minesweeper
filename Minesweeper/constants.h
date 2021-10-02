@@ -13,6 +13,8 @@
 
 #define ALERT "Parâmetros inválidos!"
 
+#define SLIDING_SPEED 1
+
 #define BUTTON_X 0
 #define BUTTON_Y 0
 #define BUTTON_W 450
@@ -75,7 +77,6 @@
 #define GREEN_INFO_NEUTRAL 255
 #define BLUE_INFO_NEUTRAL 255
 
-
 #define FINISH_BANNER_X 0
 #define FINISH_BANNER_Y WINDOW_HEIGHT / 3
 #define FINISH_BANNER_W WINDOW_WIDTH
@@ -90,7 +91,8 @@
 #define Y_FINE_ADJUSTEMENT 0
 #define TEXT_BOX_FINE_ADJUSTEMENT 50
 
-#define TITLE "Minesweeper in SDL"
+#define WINDOW_TITLE "Minesweeper in SDL"
+#define TITLE "Campo Minado"
 #define TITLE_H 20
 #define TITLE_X WINDOW_WIDTH / 2
 #define TITLE_Y WINDOW_HEIGHT - TITLE_H
@@ -100,8 +102,8 @@
 #define FRAME_TARGET_TIME (1000 / FPS)
 
 #define FONT_SIZE 100
-#define FONT_PATH_MAIN "resources\\fonts\\nasalization-rg.otf"
-#define FONT_PATH_SECONDARY "resources\\fonts\\GenericMobileSystem.ttf"
+#define FONT_PATH_MAIN "resources\\fonts\\rexlia-rg.otf"
+#define FONT_PATH_SECONDARY "resources\\fonts\\rexlia-rg.otf"
 #define ALPHA_UNSELECTED 64
 #define ALPHA_SELECTED 127
 
@@ -131,7 +133,7 @@
 #define ERROR_SDL_AUDIO "Error initializing SDL Audio.\n"
 #define ERROR_SDL_INIT_PNG "Error initializing PNG support.\n"
 
-#define AUTHOR "Campo Minado - v2.0.0.2109-beta3 - Implementado por Kevin Costa"
+#define AUTHOR "Campo Minado em SDL - v2.0.0.2110 - Implementado por Kevin Costa"
 
 #define NEW_GAME_TEXT "  Novo jogo  "
 #define QUIT_GAME_TEXT " Sair do jogo "

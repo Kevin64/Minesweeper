@@ -51,8 +51,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,0,0,2109
- PRODUCTVERSION 2,0,0,2109
+ FILEVERSION 2,0,0,2110
+ PRODUCTVERSION 2,0,0,2110
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -69,12 +69,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Kevin Costa"
             VALUE "FileDescription", "Minesweeper in SDL"
-            VALUE "FileVersion", "2.0.0.2109-beta4"
+            VALUE "FileVersion", "2.0.0.2110"
             VALUE "InternalName", "Minesweeper-SDL.exe"
             VALUE "LegalCopyright", "Copyright (C) 2021"
             VALUE "OriginalFilename", "Minesweeper-SDL.exe"
             VALUE "ProductName", "Minesweeper in SDL"
-            VALUE "ProductVersion", "2.0.0.2109-beta4"
+            VALUE "ProductVersion", "2.0.0.2110"
         END
     END
     BLOCK "VarFileInfo"

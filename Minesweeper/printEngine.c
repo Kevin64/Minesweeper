@@ -72,7 +72,7 @@ void printFinish(field_t *f, field_t *c, SDL_Renderer *renderer, SDL_Surface *fi
 }
 
 // Prints title with version.
-void printTitle(SDL_Renderer *renderer, SDL_Surface *titleTextSurface, SDL_Texture *titleTextTexture, TTF_Font *font, SDL_Color color)
+void printTitle(SDL_Renderer *renderer, SDL_Surface *aboutTextSurface, SDL_Texture *aboutTextTexture, TTF_Font *font, SDL_Color color)
 {
 	SDL_Rect title_banner = {
 		(int)TITLE_X,
@@ -84,14 +84,14 @@ void printTitle(SDL_Renderer *renderer, SDL_Surface *titleTextSurface, SDL_Textu
 	char *aux = malloc(length + 1);
 	snprintf(aux, length + 1, "%s", AUTHOR);
 
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 127);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
 	SDL_RenderFillRect(renderer, &title_banner);
 
-	titleTextSurface = TTF_RenderText_Blended(font, aux, color);
-	titleTextTexture = SDL_CreateTextureFromSurface(renderer, titleTextSurface);
-	SDL_RenderCopy(renderer, titleTextTexture, NULL, &title_banner);
-	SDL_FreeSurface(titleTextSurface);
-	SDL_DestroyTexture(titleTextTexture);
+	aboutTextSurface = TTF_RenderText_Blended(font, aux, color);
+	aboutTextTexture = SDL_CreateTextureFromSurface(renderer, aboutTextSurface);
+	SDL_RenderCopy(renderer, aboutTextTexture, NULL, &title_banner);
+	SDL_FreeSurface(aboutTextSurface);
+	SDL_DestroyTexture(aboutTextTexture);
 }
 
 void printTextLine(SDL_Renderer *renderer, SDL_Surface *formTextSurface, SDL_Texture *formTextTexture, TTF_Font *font, SDL_Color color, SDL_Rect rect, char *text, int r, int g, int b, int a)

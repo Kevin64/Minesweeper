@@ -36,11 +36,12 @@ Mix_Chunk *soundEffectL,
 			*soundEffectMenu,
 			*soundEffectVictory;
 SDL_Surface //*windowIconSurface,
-			*titleTextSurface,
+			*aboutTextSurface,
 			*bgScrollSurface,
 			*menuPresentationSurface,
-			*menuTextSurface1,
-			*menuTextSurface2,
+			*menuTitlePresentationSurface,
+			*menuButtonTextSurface1,
+			*menuButtonTextSurface2,
 			*labelSurface,
 			*textInputSurface,
 			*okButtonSurface,
@@ -55,11 +56,12 @@ SDL_Surface //*windowIconSurface,
 			*coverIconSurface,
 			*finaleTextSurface;
 SDL_Texture //*windowIconTexture,
-			*titleTextTexture,
+			*aboutTextTexture,
 			*bgScrollTexture,	
 			*menuPresentationTexture,
-			*menuTextTexture1,
-			*menuTextTexture2,
+			*menuTitlePresentationTexture,
+			*menuButtonTextTexture1,
+			*menuButtonTextTexture2,
 			*labelTexture,
 			*textInputTexture,
 			*okButtonTexture,
@@ -75,7 +77,9 @@ SDL_Texture //*windowIconTexture,
 			*finaleTextTexture;
 SDL_Rect bgScrollRect1,
 		bgScrollRect2,
-		menuPresentationRect,
+		menuPresentationRect1,
+		menuPresentationRect2,
+		menuTitlePresentationRect,
 		menuButtonRect1,
 		menuButtonRect2,
 		widthFieldLabelRect,
@@ -129,7 +133,7 @@ bool initialize_window(void)
 
 	// Create window with those parameters.
 	window = SDL_CreateWindow(
-		TITLE, // Title in titlebar.
+		WINDOW_TITLE, // Title in titlebar.
 		SDL_WINDOWPOS_CENTERED, // Screen X position.
 		SDL_WINDOWPOS_CENTERED, // Screen Y position.
 		WINDOW_WIDTH, // Window width.
@@ -180,8 +184,8 @@ bool initialize_window(void)
 	// Sets icons and images for assets.
 	bgScrollSurface = IMG_Load(BACKGROUND_WALLPAPER);
 	menuPresentationSurface = IMG_Load(PRESENTATION);
-	menuTextSurface1 = IMG_Load(NEW_OK_BUTTON);
-	menuTextSurface2 = IMG_Load(QUIT_BUTTON);
+	menuButtonTextSurface1 = IMG_Load(NEW_OK_BUTTON);
+	menuButtonTextSurface2 = IMG_Load(QUIT_BUTTON);
 	okButtonSurface = IMG_Load(NEW_OK_BUTTON);
 	mineBoomIconSurface = IMG_Load(MINE_BOOM_ICON);
 	mineDeathIconSurface = IMG_Load(MINE_DEATH_ICON);
@@ -213,6 +217,7 @@ bool initialize_window(void)
 	bgScrollRect2.w = WINDOW_WIDTH;
 	bgScrollRect2.h = WINDOW_HEIGHT;
 
+	// Initializes in-game mine amount info coordinates.
 	infoRect.x = 0;
 	infoRect.y = 0;
 	infoRect.w = 200;
@@ -225,11 +230,23 @@ bool initialize_window(void)
 // Initializes menu parameters.
 void setup_main_menu()
 {	
-	// Sets presentation image size.
-	menuPresentationRect.w = 256;
-	menuPresentationRect.x = WINDOW_WIDTH / 2 - menuPresentationRect.w / 2;
-	menuPresentationRect.h = 256;
-	menuPresentationRect.y = WINDOW_HEIGHT / 4 - menuPresentationRect.h / 2;
+	// Sets presentation image 1 size.
+	menuPresentationRect1.w = 128;
+	menuPresentationRect1.x = WINDOW_WIDTH / 16;
+	menuPresentationRect1.h = 128;
+	menuPresentationRect1.y = WINDOW_HEIGHT / 4 - menuPresentationRect1.h / 2;
+
+	// Sets presentation image 2 size.
+	menuPresentationRect2.w = 128;
+	menuPresentationRect2.x = WINDOW_WIDTH / 1.2;
+	menuPresentationRect2.h = 128;
+	menuPresentationRect2.y = WINDOW_HEIGHT / 4 - menuPresentationRect1.h / 2;
+
+	// Sets presentation title size.
+	menuTitlePresentationRect.w = 750;
+	menuTitlePresentationRect.x = WINDOW_WIDTH / 5;
+	menuTitlePresentationRect.h = 128;
+	menuTitlePresentationRect.y = WINDOW_HEIGHT / 4 - menuTitlePresentationRect.h / 2;
 
 	// Sets button size.
 	button_x = BUTTON_X;
@@ -533,8 +550,8 @@ void update()
 		bgScrollRect1.y = 0;
 	if(bgScrollRect2.y > 0)
 		bgScrollRect2.y = -WINDOW_HEIGHT;
-	bgScrollRect1.y += 4; // Slides background 1 down.
-	bgScrollRect2.y += 4; // Slides background 2 down.
+	bgScrollRect1.y += SLIDING_SPEED; // Slides background 1 down.
+	bgScrollRect2.y += SLIDING_SPEED; // Slides background 2 down.
 	
 	// Changes the angle of presentation.
 	if (angle > 360)
@@ -559,21 +576,29 @@ void render()
 
 		SDL_DestroyTexture(bgScrollTexture);
 		
-		// Presentation image.
+		// Presentation image 1.
 		menuPresentationTexture = SDL_CreateTextureFromSurface(renderer, menuPresentationSurface);
-		SDL_RenderCopyEx(renderer, menuPresentationTexture, NULL, &menuPresentationRect, angle, NULL, SDL_FLIP_NONE);
+		SDL_RenderCopyEx(renderer, menuPresentationTexture, NULL, &menuPresentationRect1, angle, NULL, SDL_FLIP_NONE);
 		SDL_DestroyTexture(menuPresentationTexture);
 
+		// Presentation image 2.
+		menuPresentationTexture = SDL_CreateTextureFromSurface(renderer, menuPresentationSurface);
+		SDL_RenderCopyEx(renderer, menuPresentationTexture, NULL, &menuPresentationRect2, -angle, NULL, SDL_FLIP_NONE);
+		SDL_DestroyTexture(menuPresentationTexture);
+
+		// Presentation title.
+		printTextLine(renderer, menuTitlePresentationSurface, menuTitlePresentationTexture, font_main, colorTitle, menuTitlePresentationRect, TITLE, 0, 0, 0, 0);
+
 		// Menu buttons.
-		menuTextTexture1 = SDL_CreateTextureFromSurface(renderer, menuTextSurface1);
-		menuTextTexture2 = SDL_CreateTextureFromSurface(renderer, menuTextSurface2);
-		SDL_RenderCopy(renderer, menuTextTexture1, NULL, &menuButtonRect1);
-		SDL_RenderCopy(renderer, menuTextTexture2, NULL, &menuButtonRect2);
-		SDL_DestroyTexture(menuTextTexture1);
-		SDL_DestroyTexture(menuTextTexture2);
+		menuButtonTextTexture1 = SDL_CreateTextureFromSurface(renderer, menuButtonTextSurface1);
+		menuButtonTextTexture2 = SDL_CreateTextureFromSurface(renderer, menuButtonTextSurface2);
+		SDL_RenderCopy(renderer, menuButtonTextTexture1, NULL, &menuButtonRect1);
+		SDL_RenderCopy(renderer, menuButtonTextTexture2, NULL, &menuButtonRect2);
+		SDL_DestroyTexture(menuButtonTextTexture1);
+		SDL_DestroyTexture(menuButtonTextTexture2);
 
 		// Prints title.
-		printTitle(renderer, titleTextSurface, titleTextTexture, font_main, colorTitle);
+		printTitle(renderer, aboutTextSurface, aboutTextTexture, font_main, colorTitle);
 
 		// If mouse is over new game button, highlights itself and if clicked, go to select size/mines screen.
 		if (xm >= menuButtonRect1.x && xm <= menuButtonRect1.x + menuButtonRect1.w && ym >= menuButtonRect1.y && ym <= menuButtonRect1.y + menuButtonRect1.h)
@@ -617,14 +642,14 @@ void render()
 		// Highlisghts new game button.
 		if (option == 0)
 		{
-			printTextLine(renderer, menuTextSurface1, menuTextTexture1, font_main, colorMenuText, menuButtonRect1, NEW_GAME_TEXT, 0, 0, 0, 0);
-			printTextLine(renderer, menuTextSurface2, menuTextTexture2, font_main, colorMenuText, menuButtonRect2, QUIT_GAME_TEXT, 0, 0, 0, 127);
+			printTextLine(renderer, menuButtonTextSurface1, menuButtonTextTexture1, font_main, colorMenuText, menuButtonRect1, NEW_GAME_TEXT, 0, 0, 0, 0);
+			printTextLine(renderer, menuButtonTextSurface1, menuButtonTextTexture1, font_main, colorMenuText, menuButtonRect2, QUIT_GAME_TEXT, 0, 0, 0, 127);
 		}
 		// Highlisghts quit game button.
 		else if (option == 1)
 		{
-			printTextLine(renderer, menuTextSurface2, menuTextTexture2, font_main, colorMenuText, menuButtonRect1, NEW_GAME_TEXT, 0, 0, 0, 127);
-			printTextLine(renderer, menuTextSurface2, menuTextTexture2, font_main, colorMenuText, menuButtonRect2, QUIT_GAME_TEXT, 0, 0, 0, 0);
+			printTextLine(renderer, menuButtonTextSurface1, menuButtonTextTexture1, font_main, colorMenuText, menuButtonRect1, NEW_GAME_TEXT, 0, 0, 0, 127);
+			printTextLine(renderer, menuButtonTextSurface1, menuButtonTextTexture1, font_main, colorMenuText, menuButtonRect2, QUIT_GAME_TEXT, 0, 0, 0, 0);
 		}	
 
 		SDL_RenderPresent(renderer);
@@ -642,7 +667,7 @@ void render()
 		SDL_DestroyTexture(bgScrollTexture);
 
 		// Prints title.
-		printTitle(renderer, titleTextSurface, titleTextTexture, font_main, colorTitle);
+		printTitle(renderer, aboutTextSurface, aboutTextTexture, font_main, colorTitle);
 
 		widthFieldLabelRect.y = WIDTH_TEXT_Y;
 		widthFieldLabelRect.w = WIDTH_TEXT_W;
@@ -690,9 +715,9 @@ void render()
 		okButtonRect.x = centerFormTextX;
 
 		// Draws each text label.
-		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, widthFieldLabelRect, WIDTH_TEXT, 0, 0, 0, 255);
-		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, heightFieldLabelRect, HEIGHT_TEXT, 0, 0, 0, 255);
-		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, mineAmountLabelRect, MINE_AMOUNT_TEXT, 0, 0, 0, 255);
+		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, widthFieldLabelRect, WIDTH_TEXT, 0, 0, 0, 0);
+		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, heightFieldLabelRect, HEIGHT_TEXT, 0, 0, 0, 0);
+		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, mineAmountLabelRect, MINE_AMOUNT_TEXT, 0, 0, 0, 0);
 
 		// Draws OK button
 		okButtonTexture = SDL_CreateTextureFromSurface(renderer, okButtonSurface);
@@ -832,10 +857,10 @@ void render()
 		SDL_DestroyTexture(bgScrollTexture);
 
 		// Prints title.
-		printTitle(renderer, titleTextSurface, titleTextTexture, font_main, colorTitle);
+		printTitle(renderer, aboutTextSurface, aboutTextTexture, font_main, colorTitle);
 
 		// Prints the mine amount left.
-		printTextLine(renderer, infoTextSurface, infoTextTexture, font_secondary, colorInfo, infoRect, mineRemainingConcat, 0, 0, 0, 255);
+		printTextLine(renderer, infoTextSurface, infoTextTexture, font_secondary, colorInfo, infoRect, mineRemainingConcat, 0, 0, 0, 0);
 
 		i = 0;
 		j = 0;
@@ -996,11 +1021,11 @@ void render()
 // Closes window, free memory from stuff and terminate process.
 void destroy_window()
 {
-	SDL_FreeSurface(titleTextSurface);
+	SDL_FreeSurface(aboutTextSurface);
 	SDL_FreeSurface(bgScrollSurface);
 	SDL_FreeSurface(menuPresentationSurface);
-	SDL_FreeSurface(menuTextSurface1);
-	SDL_FreeSurface(menuTextSurface2);
+	SDL_FreeSurface(menuButtonTextSurface1);
+	SDL_FreeSurface(menuButtonTextSurface2);
 	SDL_FreeSurface(labelSurface);
 	SDL_FreeSurface(textInputSurface);
 	SDL_FreeSurface(okButtonSurface);
@@ -1014,6 +1039,7 @@ void destroy_window()
 	SDL_FreeSurface(finaleTextSurface);
 
 	TTF_CloseFont(font_main);
+	TTF_CloseFont(font_secondary);
 	TTF_Quit();
 
 	Mix_FreeMusic(backgroundMusicMenu);
