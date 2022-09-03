@@ -98,7 +98,7 @@
 #define TITLE_Y WINDOW_HEIGHT - TITLE_H
 #define TITLE_W WINDOW_WIDTH - WINDOW_WIDTH / 2
 
-#define FPS 60
+#define FPS 30
 #define FRAME_TARGET_TIME (1000 / FPS)
 
 #define FONT_SIZE 100
@@ -133,7 +133,7 @@
 #define ERROR_SDL_AUDIO "Error initializing SDL Audio.\n"
 #define ERROR_SDL_INIT_PNG "Error initializing PNG support.\n"
 
-#define AUTHOR "Campo Minado em SDL - v2.0.0.2110 - Implementado por Kevin Costa"
+#define AUTHOR "Campo Minado em SDL - v2.0.1.2209 - Implementado por Kevin Costa"
 
 #define NEW_GAME_TEXT "  Novo jogo  "
 #define QUIT_GAME_TEXT " Sair do jogo "

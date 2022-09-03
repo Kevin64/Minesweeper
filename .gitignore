@@ -21,3 +21,7 @@ Debug/zlib1.dll
 *.7z
 Debug/nasalization-rg.otf
 *.enc
+*.lock
+*.vsidx
+*.ipdb
+*.iobj

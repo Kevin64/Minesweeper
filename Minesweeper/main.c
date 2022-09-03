@@ -192,6 +192,17 @@ bool initialize_window(void)
 	edgeIconSurface = IMG_Load(EDGE_ICON);
 	flagIconSurface = IMG_Load(FLAG_ICON);
 	coverIconSurface = IMG_Load(COVER_ICON);	
+
+	bgScrollTexture = SDL_CreateTextureFromSurface(renderer, bgScrollSurface);
+	menuPresentationTexture = SDL_CreateTextureFromSurface(renderer, menuPresentationSurface);
+	menuButtonTextTexture1 = SDL_CreateTextureFromSurface(renderer, menuButtonTextSurface1);
+	menuButtonTextTexture2 = SDL_CreateTextureFromSurface(renderer, menuButtonTextSurface2);
+	okButtonTexture = SDL_CreateTextureFromSurface(renderer, okButtonSurface);
+	mineDeathIconTexture = SDL_CreateTextureFromSurface(renderer, mineDeathIconSurface);
+	edgeIconTexture = SDL_CreateTextureFromSurface(renderer, edgeIconSurface);
+	flagIconTexture = SDL_CreateTextureFromSurface(renderer, flagIconSurface);
+	coverIconTexture = SDL_CreateTextureFromSurface(renderer, coverIconSurface);
+	mineBoomIconTexture = SDL_CreateTextureFromSurface(renderer, mineBoomIconSurface);
 	
 	// If can't create audio, outputs an error message.
 	if (Mix_OpenAudio(44800, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
@@ -570,32 +581,21 @@ void render()
 		SDL_RenderClear(renderer);
 
 		// Background animation.
-		bgScrollTexture = SDL_CreateTextureFromSurface(renderer, bgScrollSurface);
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect1);
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect2);
-
-		SDL_DestroyTexture(bgScrollTexture);
 		
 		// Presentation image 1.
-		menuPresentationTexture = SDL_CreateTextureFromSurface(renderer, menuPresentationSurface);
 		SDL_RenderCopyEx(renderer, menuPresentationTexture, NULL, &menuPresentationRect1, angle, NULL, SDL_FLIP_NONE);
-		SDL_DestroyTexture(menuPresentationTexture);
 
 		// Presentation image 2.
-		menuPresentationTexture = SDL_CreateTextureFromSurface(renderer, menuPresentationSurface);
 		SDL_RenderCopyEx(renderer, menuPresentationTexture, NULL, &menuPresentationRect2, -angle, NULL, SDL_FLIP_NONE);
-		SDL_DestroyTexture(menuPresentationTexture);
 
 		// Presentation title.
 		printTextLine(renderer, menuTitlePresentationSurface, menuTitlePresentationTexture, font_main, colorTitle, menuTitlePresentationRect, TITLE, 0, 0, 0, 0);
 
 		// Menu buttons.
-		menuButtonTextTexture1 = SDL_CreateTextureFromSurface(renderer, menuButtonTextSurface1);
-		menuButtonTextTexture2 = SDL_CreateTextureFromSurface(renderer, menuButtonTextSurface2);
 		SDL_RenderCopy(renderer, menuButtonTextTexture1, NULL, &menuButtonRect1);
 		SDL_RenderCopy(renderer, menuButtonTextTexture2, NULL, &menuButtonRect2);
-		SDL_DestroyTexture(menuButtonTextTexture1);
-		SDL_DestroyTexture(menuButtonTextTexture2);
 
 		// Prints title.
 		printTitle(renderer, aboutTextSurface, aboutTextTexture, font_main, colorTitle);
@@ -661,10 +661,8 @@ void render()
 		SDL_RenderClear(renderer);
 		
 		// Background animation.
-		bgScrollTexture = SDL_CreateTextureFromSurface(renderer, bgScrollSurface);
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect1);
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect2);
-		SDL_DestroyTexture(bgScrollTexture);
 
 		// Prints title.
 		printTitle(renderer, aboutTextSurface, aboutTextTexture, font_main, colorTitle);
@@ -720,10 +718,8 @@ void render()
 		printTextLine(renderer, labelSurface, labelTexture, font_main, colorForm, mineAmountLabelRect, MINE_AMOUNT_TEXT, 0, 0, 0, 0);
 
 		// Draws OK button
-		okButtonTexture = SDL_CreateTextureFromSurface(renderer, okButtonSurface);
 		SDL_RenderCopy(renderer, okButtonTexture, NULL, &okButtonRect);
 		printTextLine(renderer, okButtonSurface, okButtonTexture, font_main, colorButton, okButtonRect, OK_BUTTON_TEXT, 0, 0, 0, alpha4);
-		SDL_DestroyTexture(okButtonTexture);
 
 		// Draws each textbox for input.
 		SDL_SetRenderDrawColor(renderer, 127, 127, 127, alpha1);
@@ -849,12 +845,10 @@ void render()
 		SDL_RenderClear(renderer);
 		
 		// Background animation.
-		bgScrollTexture = SDL_CreateTextureFromSurface(renderer, bgScrollSurface);
 		SDL_SetTextureBlendMode(bgScrollTexture, SDL_BLENDMODE_BLEND); // Sets the blend mode for alpha transparency on textures.
 		SDL_SetTextureAlphaMod(bgScrollTexture, 64); // Sets the alpha transparency.
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect1);
 		SDL_RenderCopy(renderer, bgScrollTexture, NULL, &bgScrollRect2);
-		SDL_DestroyTexture(bgScrollTexture);
 
 		// Prints title.
 		printTitle(renderer, aboutTextSurface, aboutTextTexture, font_main, colorTitle);
@@ -918,9 +912,7 @@ void render()
 					f->mat[i][j] = MINE_TRIG;
 
 					// Shows a custom icon for mines.					
-					mineDeathIconTexture = SDL_CreateTextureFromSurface(renderer, mineDeathIconSurface);
 					SDL_RenderCopy(renderer, mineDeathIconTexture, NULL, &tileSquareRect);
-					SDL_DestroyTexture(mineDeathIconTexture);
 					showMines = true;
 					if (resetIJ == true)
 					{
@@ -934,30 +926,24 @@ void render()
 					SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
 					SDL_RenderFillRect(renderer, &tileSquareRect);
 
-					// Shows a custom icon for edges.					
-					edgeIconTexture = SDL_CreateTextureFromSurface(renderer, edgeIconSurface);
+					// Shows a custom icon for edges.
 					SDL_RenderCopy(renderer, edgeIconTexture, NULL, &tileSquareRect);
-					SDL_DestroyTexture(edgeIconTexture);
 				}
 				else if (c->mat[i][j] == FLAG)
 				{
 					SDL_SetRenderDrawColor(renderer, 127, 255, 0, 255);
 					SDL_RenderFillRect(renderer, &tileSquareRect);
 
-					// Shows a custom icon for flags.					
-					flagIconTexture = SDL_CreateTextureFromSurface(renderer, flagIconSurface);
+					// Shows a custom icon for flags.
 					SDL_RenderCopy(renderer, flagIconTexture, NULL, &tileSquareRect);
-					SDL_DestroyTexture(flagIconTexture);
 				}
 				else if (c->mat[i][j] == COVER)
 				{
 					SDL_SetRenderDrawColor(renderer, 64, 64, 128, 255);
 					SDL_RenderFillRect(renderer, &tileSquareRect);
 
-					// Shows a custom icon for cover.					
-					coverIconTexture = SDL_CreateTextureFromSurface(renderer, coverIconSurface);
+					// Shows a custom icon for cover.
 					SDL_RenderCopy(renderer, coverIconTexture, NULL, &tileSquareRect);
-					SDL_DestroyTexture(coverIconTexture);
 				}
 				else if (c->mat[i][j] == 0)
 				{
@@ -983,10 +969,8 @@ void render()
 				// If the player dies, show all the hidden mines.
 				if (f->mat[i][j] == MINE && showMines)
 				{
-					// Shows a custom icon for mines.					
-					mineBoomIconTexture = SDL_CreateTextureFromSurface(renderer, mineBoomIconSurface);
+					// Shows a custom icon for mines.
 					SDL_RenderCopy(renderer, mineBoomIconTexture, NULL, &tileSquareRect);
-					SDL_DestroyTexture(mineBoomIconTexture);
 				}
 			}
 		}
