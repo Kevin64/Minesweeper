@@ -106,7 +106,7 @@ bool showMines = false;
 bool resetIJ = true;
 bool soundEffectPlayed = false;
 int last_frame_time = 0;
-int length, option = 0, formField = 0;
+int length, option = RESET_OPTION, formField = 0;
 int alpha1 = ALPHA_UNSELECTED, alpha2 = ALPHA_UNSELECTED, alpha3 = ALPHA_UNSELECTED, alpha4 = ALPHA_UNSELECTED;
 int i, j, counter1 = 1, counter2 = 1, counter3 = 1;
 int ij_selected[3];
@@ -316,7 +316,7 @@ void process_input()
 	{
 		// If main menu is running...
 		if (main_menu_is_running && !select_menu_is_running && !stage_is_running)
-		{			
+		{
 			showMines = false;
 			resetIJ = true;
 			win = false;
@@ -365,6 +365,7 @@ void process_input()
 					// ... the new game button.
 					if (option == 0)
 					{
+						option = RESET_OPTION;
 						main_menu_is_running = false;
 						select_menu_is_running = true;
 						stage_is_running = false;
@@ -406,47 +407,60 @@ void process_input()
 				// ... and it's the Escape key, returns to main menu.
 				if (event.key.keysym.sym == SDLK_ESCAPE)
 				{
+					option = RESET_OPTION;
 					main_menu_is_running = true;
 					select_menu_is_running = false;
 					stage_is_running = false;
 				}
-				if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput1) > 0 && formField == 0)
+				// ... and it's the down arrow, go to option below.
+				if (event.key.keysym.sym == SDLK_DOWN && option < 3)
+				{
+					formField++;
+					option++;
+				}
+				// ... and it's the up arrow, go to option above.
+				if (event.key.keysym.sym == SDLK_UP && option > 0)
+				{
+					formField--;
+					option--;
+				}
+				if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput1) > 0 && (formField == 0 || option == 0))
 				{
 					substring(paramInput1, paramInput1, 0, strlen(paramInput1) - 1);
-					counter1 -= TEXT_BOX_FINE_ADJUSTEMENT;
+					counter1 -= TEXT_BOX_FINE_ADJUSTMENT;
 				}
-				else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput2) > 0 && formField == 1)
+				else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput2) > 0 && (formField == 1 || option == 1))
 				{
 					substring(paramInput2, paramInput2, 0, strlen(paramInput2) - 1);
-					counter2 -= TEXT_BOX_FINE_ADJUSTEMENT;
+					counter2 -= TEXT_BOX_FINE_ADJUSTMENT;
 				}
-				else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput3) > 0 && formField == 2)
+				else if (event.key.keysym.sym == SDLK_BACKSPACE && strlen(paramInput3) > 0 && (formField == 2 || option == 2))
 				{
 					substring(paramInput3, paramInput3, 0, strlen(paramInput3) - 1);
-					counter3 -= TEXT_BOX_FINE_ADJUSTEMENT;
+					counter3 -= TEXT_BOX_FINE_ADJUSTMENT;
 				}
 				break;
 			case SDL_TEXTINPUT:
 				if (event.text.text[0] != '0' && event.text.text[0] != '1' && event.text.text[0] != '2' && event.text.text[0] != '3' && event.text.text[0] != '4' && event.text.text[0] != '5' && event.text.text[0] != '6' && event.text.text[0] != '7' && event.text.text[0] != '8' && event.text.text[0] != '9');
 				else
 				{
-					if (paramInput1[1] == '\0' && formField == 0)
+					if (paramInput1[1] == '\0' && (formField == 0 || option == 0))
 					{
 						SDL_SetTextInputRect(&widthFieldLabelRect);
 						strcat(paramInput1, event.text.text);
-						counter1 += TEXT_BOX_FINE_ADJUSTEMENT;
+						counter1 += TEXT_BOX_FINE_ADJUSTMENT;
 					}
-					else if (paramInput2[1] == '\0' && formField == 1)
+					else if (paramInput2[1] == '\0' && (formField == 1 || option == 1))
 					{
 						SDL_SetTextInputRect(&widthFieldLabelRect);
 						strcat(paramInput2, event.text.text);
-						counter2 += TEXT_BOX_FINE_ADJUSTEMENT;
+						counter2 += TEXT_BOX_FINE_ADJUSTMENT;
 					}
-					else if (paramInput3[2] == '\0' && formField == 2)
+					else if (paramInput3[2] == '\0' && (formField == 2 || option == 2))
 					{
 						SDL_SetTextInputRect(&widthFieldLabelRect);
 						strcat(paramInput3, event.text.text);
-						counter3 += TEXT_BOX_FINE_ADJUSTEMENT;
+						counter3 += TEXT_BOX_FINE_ADJUSTMENT;
 					}
 				}				
 				break;
@@ -609,7 +623,7 @@ void render()
 				Mix_PlayChannel(-1, soundEffectMenu, 0);
 				soundEffectPlayed = true;
 			}			
-			option = 0;
+			option = RESET_OPTION;
 			if (clickedL)
 			{
 				main_menu_is_running = false;
@@ -742,6 +756,7 @@ void render()
 			if (clickedL)
 			{
 				formField = 0;
+				option = RESET_OPTION;
 				clickedL = false;
 			}
 		}
@@ -757,6 +772,7 @@ void render()
 			if (clickedL)
 			{
 				formField = 1;
+				option = 1;
 				clickedL = false;
 			}
 		}
@@ -772,13 +788,13 @@ void render()
 			if (clickedL)
 			{
 				formField = 2;
+				option = 2;
 				clickedL = false;
 			}
 		}
 		// If the mouse is over the ok button, and a click is detected, starts a new stage.
 		else if (xm >= okButtonRect.x && xm <= okButtonRect.x + okButtonRect.w && ym >= okButtonRect.y && ym <= okButtonRect.y + okButtonRect.h)
 		{
-			alpha4 = 0; // Highlights OK button.
 			// If sound effect has not been played yet, plays once if the mouse stays inside the button area.
 			if (!soundEffectPlayed)
 			{
@@ -788,52 +804,64 @@ void render()
 			if (clickedL)
 			{
 				formField = 3;
+				option = 3;
 				clickedL = false;
 			}
 		}
 		else
 		{
-			alpha4 = 127; // Darkens OK button if mouse os not over it.
 			soundEffectPlayed = false; // If the mouse exits any textbox/button area, sets sound effect to play again on collision.
 		}
 		
 		// Highlights the width textbox.
-		if (formField == 0)
+		if (formField == 0 || option == 0)
 		{
 			alpha1 = ALPHA_SELECTED;
 			alpha2 = ALPHA_UNSELECTED;
 			alpha3 = ALPHA_UNSELECTED;
+			alpha4 = ALPHA_UNSELECTED;
 		}
 		// Highlights the height textbox.
-		if (formField == 1)
+		if (formField == 1 || option == 1)
 		{
 			alpha1 = ALPHA_UNSELECTED;
 			alpha2 = ALPHA_SELECTED;
 			alpha3 = ALPHA_UNSELECTED;
+			alpha4 = ALPHA_UNSELECTED;
 		}
 		// Highlights the mine textbox.
-		if (formField == 2)
+		if (formField == 2 || option == 2)
 		{
 			alpha1 = ALPHA_UNSELECTED;
 			alpha2 = ALPHA_UNSELECTED;
 			alpha3 = ALPHA_SELECTED;
+			alpha4 = ALPHA_UNSELECTED;
 		}
 		// Grab width, height and mine amount and starts a new stage.
-		if (formField == 3)
+		if (option == 3)
 		{
-			// Converts each string to an integer.
-			w = strtol(paramInput1, NULL, 10);
-			h = strtol(paramInput2, NULL, 10);
-			m = strtol(paramInput3, NULL, 10);
-			if (w > WIDTH_MIN && w < WIDTH_MAX && h > HEIGHT_MIN && h < HEIGHT_MAX && m > MINE_MIN && m < (w * h))
+			alpha1 = ALPHA_UNSELECTED;
+			alpha2 = ALPHA_UNSELECTED;
+			alpha3 = ALPHA_UNSELECTED;
+			alpha4 = ALPHA_SELECTED;
+
+			if (formField == 3)
 			{
-				mineRemainingInt = m;
-				select_menu_is_running = false;
-				stage_is_running = true;
-				Mix_HaltMusic(); // Stops background menu music.
+				// Converts each string to an integer.
+				w = strtol(paramInput1, NULL, 10);
+				h = strtol(paramInput2, NULL, 10);
+				m = strtol(paramInput3, NULL, 10);
+				if (w > WIDTH_MIN && w < WIDTH_MAX && h > HEIGHT_MIN && h < HEIGHT_MAX && m > MINE_MIN && m < (w * h))
+				{
+					mineRemainingInt = m;
+					select_menu_is_running = false;
+					stage_is_running = true;
+					option = RESET_OPTION;
+					Mix_HaltMusic(); // Stops background menu music.
+				}
+				else
+					printAlert(renderer, alertTextSurface, alertTextTexture, font_main, colorAlert); // If field parameters are out of bounds, shows a banner alert.
 			}
-			else
-				printAlert(renderer, alertTextSurface, alertTextTexture, font_main, colorAlert); // If field parameters are out of bounds, shows a banner alert.
 		}
 
 		SDL_RenderPresent(renderer);

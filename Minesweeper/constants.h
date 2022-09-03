@@ -89,7 +89,7 @@
 
 #define X_FINE_ADJUSTEMENT 2
 #define Y_FINE_ADJUSTEMENT 0
-#define TEXT_BOX_FINE_ADJUSTEMENT 50
+#define TEXT_BOX_FINE_ADJUSTMENT 50
 
 #define WINDOW_TITLE "Minesweeper in SDL"
 #define TITLE "Campo Minado"
@@ -106,6 +106,7 @@
 #define FONT_PATH_SECONDARY "resources\\fonts\\rexlia-rg.otf"
 #define ALPHA_UNSELECTED 64
 #define ALPHA_SELECTED 127
+#define RESET_OPTION 0
 
 //#define WINDOW_ICON "resources\\icons\\window_icon.bmp"
 #define MINE_BOOM_ICON "resources\\icons\\mine_boom_icon.bmp"

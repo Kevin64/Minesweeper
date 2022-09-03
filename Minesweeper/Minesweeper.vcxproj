@@ -81,7 +81,7 @@
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>D:\kevin\OneDrive\Documentos\GitHub\C\SDK\SDL2-2.24.0\include;D:\kevin\OneDrive\Documentos\GitHub\C\SDK\SDL2_image-2.6.2\include;D:\kevin\OneDrive\Documentos\GitHub\C\SDK\SDL2_mixer-2.6.2\include;D:\kevin\OneDrive\Documentos\GitHub\C\SDK\SDL2_ttf-2.20.1\include;$(IncludePath)</IncludePath>
     <LibraryPath>D:\kevin\OneDrive\Documentos\GitHub\C\SDK\SDL2_image-2.6.2\lib\x86;D:\kevin\OneDrive\Documentos\GitHub\C\SDK\SDL2_mixer-2.6.2\lib\x86;D:\kevin\OneDrive\Documentos\GitHub\C\SDK\SDL2_ttf-2.20.1\lib\x86;D:\kevin\OneDrive\Documentos\GitHub\C\SDK\SDL2-2.24.0\lib\x86;$(LibraryPath)</LibraryPath>
-    <TargetName>$(ProjectName)-SDL-2.0.0.2110</TargetName>
+    <TargetName>$(ProjectName)-SDL-2.0.1.2209</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
